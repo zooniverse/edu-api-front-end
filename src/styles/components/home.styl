@@ -1,0 +1,42 @@
+.home
+  &__hero
+    .grommetux-hero__foreground
+      svg // fix the zooniverse-logotype to apply className props.
+        bottom: 50%
+        position: absolute
+        transform: rotate(-90deg)
+
+    .hero__big-circle
+      background: TEAL_MID
+      background-image: linear-gradient(TEAL_MID, TEAL_LIGHT)
+      border-radius: 50%
+      height: 65px
+      margin: 0 3em 0 0;
+      position: relative
+      width: 65px
+
+    .hero__small-circle
+      background: TEAL_DARK
+      border-radius: 50%
+      height: 40px
+      opacity: 0.5
+      position: absolute
+      right: -0.5em
+      top: -0.5em
+      width: 40px
+      z-index: 1
+
+  &__header
+    font-family: "Roboto Mono", monospace
+    font-size: 3.25rem !important
+
+  &__description
+    color: I2A_BLUE !important
+    font-weight: bold
+
+  .button
+    font-size: 1rem
+
+  &__section
+    .section__paragraph
+      font-weight: bold
