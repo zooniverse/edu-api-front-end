@@ -6,11 +6,12 @@ import apiClient from 'panoptes-client/lib/api-client';
 import AboutLayout from './about';
 import ZooHeader from './ZooHeader';
 import ZooFooter from './ZooFooter';
-import Home from '../components/Home';
+import Home from './Home';
 import AdminContainer from '../containers/AdminContainer';
-import AdminLayoutIndicator from '../components/AdminLayoutIndicator';
+import AdminLayoutIndicator from './AdminLayoutIndicator';
 import AuthContainer from '../containers/AuthContainer';
 import { ZooniverseLogo } from 'zooniverse-react-components';
+import AstroHome from './astro/AstroHome';
 
 export default function Main() {
   const mainHeaderNavList = [
@@ -31,6 +32,7 @@ export default function Main() {
         <Switch>
           <Route exact path="/" component={Home} />
           <Route path="/about" component={AboutLayout} />
+          <Route path="/astro" component={AstroHome} />
         </Switch>
         <ZooFooter adminContainer={<AdminContainer />} />
       </Box>
