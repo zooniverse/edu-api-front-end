@@ -4,6 +4,7 @@ import { Router, Route } from 'react-router-dom';
 import createHistory from 'history/createBrowserHistory';
 import { Provider } from 'react-redux';
 import oauth from 'panoptes-client/lib/oauth';
+import apiClient from 'panoptes-client/lib/api-client';
 
 import Main from './components/Main';
 import { config } from './config';
@@ -26,3 +27,5 @@ oauth.init(config.panoptesAppId)
       document.getElementById('root'),
     );
   });
+
+window.zooAPI = apiClient;

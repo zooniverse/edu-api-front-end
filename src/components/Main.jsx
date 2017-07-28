@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import App from 'grommet/components/App';
 import Box from 'grommet/components/Box';
-import apiClient from 'panoptes-client/lib/api-client';
 import AboutLayout from './about';
 import ZooHeader from './ZooHeader';
 import ZooFooter from './ZooFooter';
@@ -13,7 +14,7 @@ import AuthContainer from '../containers/AuthContainer';
 import { ZooniverseLogo } from 'zooniverse-react-components';
 import AstroHome from './astro/AstroHome';
 
-export default function Main() {
+const Main = ({ admin }) => {
   const mainHeaderNavList = [
     <NavLink className="site-header__link--small" to="/about">About</NavLink>
   ];
@@ -25,7 +26,7 @@ export default function Main() {
 
   return (
     <App centered={false} className="app-layout" inline={true}>
-      {!!apiClient.params.admin &&
+      {admin &&
         <AdminLayoutIndicator />}
       <Box>
         <ZooHeader mainHeaderNavList={mainHeaderNavList} authContainer={<AuthContainer />} logoHomeLink={logoHomeLink} />
@@ -40,3 +41,18 @@ export default function Main() {
   );
 }
 
+Main.defaultProps = {
+  admin: false
+};
+
+Main.propTypes = {
+  admin: PropTypes.bool
+}
+
+function mapStateToProps(state) {
+  return {
+    admin: state.auth.admin
+  };
+}
+
+export default connect(mapStateToProps)(Main);

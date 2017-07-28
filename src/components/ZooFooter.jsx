@@ -35,7 +35,7 @@ const ZooFooter = (props) => {
         margin={{ horizontal: 'large', vertical: 'none' }}
       >
         {props.homeLogoDiv}
-        <Menu className="footer__nav" direction="row">
+        <Menu className="footer__nav" direction="row" inline={true} responsive={false}>
           {props.socialNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
         </Menu>
       </Section>
@@ -44,22 +44,22 @@ const ZooFooter = (props) => {
       </Section>
       <Section direction="row" className="footer__section" pad={{ horizontal: 'large', vertical: 'medium' }} margin={{ top: 'none', bottom: 'large', left: 'none', right: 'none' }}>
         <Columns maxCount={6} masonry={true} size="small" >
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.projectNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.aboutNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.getInvolvedNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.talkNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.buildNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.newsNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
         </Columns>
@@ -73,7 +73,7 @@ const ZooFooter = (props) => {
         pad={{ horizontal: 'large', vertical: 'none' }}
         justify="between"
       >
-        <Menu className="footer__nav" direction="row" inline={true}>
+        <Menu className="footer__nav" direction="row" inline={true} responsive={false}>
           {props.policyNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
         </Menu>
         <div>

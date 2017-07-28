@@ -7,7 +7,7 @@ import { ZooniverseLogo } from 'zooniverse-react-components';
 const ZooHeader = (props) => {
   return (
     <Header justify="between" className="site-header" direction="row" size="small" responsive={true}>
-      <Menu align="center" direction="row" size="small" responsive={true}>
+      <Menu align="center" direction="row" size="small" responsive={false} inline={true}>
         {props.logoHomeLink &&
           props.logoHomeLink}
         <ul className="site-header__nav-list">

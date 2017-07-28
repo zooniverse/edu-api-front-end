@@ -5,7 +5,7 @@ import CheckBox from 'grommet/components/CheckBox';
 const AdminCheckbox = (props) => {
   return (
     <CheckBox
-      defaultChecked={props.defaultChecked}
+      checked={props.checked}
       id="admin-checkbox"
       name="admin-checkbox"
       label={props.label}
@@ -16,13 +16,13 @@ const AdminCheckbox = (props) => {
 };
 
 AdminCheckbox.defaultProps = {
-  defaultChecked: false,
-  label: "Admin Mode",
+  checked: false,
+  label: 'Admin Mode',
   onChange: () => {}
 };
 
 AdminCheckbox.propTypes = {
-  defaultChecked: PropTypes.bool,
+  checked: PropTypes.bool,
   label: PropTypes.string,
   onChange: PropTypes.func
 };
