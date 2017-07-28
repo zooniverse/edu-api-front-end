@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 import Anchor from 'grommet/components/Anchor';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import LoginButton from '../components/LoginButton';
 import LogoutButton from '../components/LogoutButton';
 import RegisterButton from '../components/RegisterButton';
@@ -37,11 +37,11 @@ class AuthContainer extends React.Component {
       const login = this.props.user.login;
       userMenuNavItems = [
         <Anchor href={`https://www.zooniverse.org/users/${login}`}>Profile</Anchor>,
-        <NavLink to="/">Home</NavLink>,
+        <Anchor path="/">Home</Anchor>,
         <Anchor href="https://www.zooniverse.org/settings">Settings</Anchor>,
         <Anchor href={`https://www.zooniverse.org/collections/${login}`}>Collections</Anchor>,
-        <Anchor href={`https://www.zooniverse.org/favorites/${login}`}></Anchor>,
-        <LogoutButton className="site-header__button--as-link" logout={this.logout} />
+        <Anchor href={`https://www.zooniverse.org/favorites/${login}`}>Favorites</Anchor>,
+        <LogoutButton logout={this.logout} />
       ];
     }
 
