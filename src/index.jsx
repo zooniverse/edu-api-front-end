@@ -14,7 +14,8 @@ import './styles/main.styl';
 const store = configureStore();
 const history = createHistory();
 
-oauth.init(config.panoptesAppId)
+// TODO: Make app ID dynamic between env
+oauth.init(config.dev.panoptesAppId)
   .then(() => {
     ReactDOM.render((
       <Provider store={store}>
