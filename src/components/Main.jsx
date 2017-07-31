@@ -4,14 +4,15 @@ import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import App from 'grommet/components/App';
 import Box from 'grommet/components/Box';
-import AboutLayout from './about';
-import ZooHeader from './ZooHeader';
-import ZooFooter from './ZooFooter';
-import Home from './Home';
-import AdminContainer from '../containers/AdminContainer';
-import AdminLayoutIndicator from './AdminLayoutIndicator';
-import AuthContainer from '../containers/AuthContainer';
 import { ZooniverseLogo } from 'zooniverse-react-components';
+
+import AboutLayout from './about';
+import ZooHeader from './layout/ZooHeader';
+import ZooFooter from './layout/ZooFooter';
+import Home from './Home';
+import AdminContainer from '../containers/layout/AdminContainer';
+import AdminLayoutIndicator from './layout/AdminLayoutIndicator';
+import AuthContainer from '../containers/layout/AuthContainer';
 import AstroHome from './astro/AstroHome';
 
 const Main = ({ admin }) => {

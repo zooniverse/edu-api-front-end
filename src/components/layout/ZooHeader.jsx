@@ -28,7 +28,7 @@ ZooHeader.defaultProps = {
 };
 
 ZooHeader.propTypes = {
-  authContainer: PropTypes.node.isRequired,
+  authContainer: PropTypes.node,
   logoHomeLink: PropTypes.node.isRequired,
   mainHeaderNavList: PropTypes.arrayOf(PropTypes.node).isRequired
 };

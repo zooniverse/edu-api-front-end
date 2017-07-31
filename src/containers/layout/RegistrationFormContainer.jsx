@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 import auth from 'panoptes-client/lib/auth';
-import RegistrationForm from '../components/RegistrationForm';
+import RegistrationForm from '../../components/layout/RegistrationForm';
 
 const REMOTE_CHECK_DELAY = 1000;
 

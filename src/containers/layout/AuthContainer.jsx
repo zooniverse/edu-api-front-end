@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 import Anchor from 'grommet/components/Anchor';
-import { Link } from 'react-router-dom';
-import LoginButton from '../components/LoginButton';
-import LogoutButton from '../components/LogoutButton';
-import RegisterButton from '../components/RegisterButton';
+import LoginButton from '../../components/layout/LoginButton';
+import LogoutButton from '../../components/layout/LogoutButton';
+import RegisterButton from '../../components/layout/RegisterButton';
 import RegistrationFormContainer from './RegistrationFormContainer';
-import UserMenu from '../components/UserMenu';
+import UserMenu from '../../components/layout/UserMenu';
 
 class AuthContainer extends React.Component {
   constructor(props) {
