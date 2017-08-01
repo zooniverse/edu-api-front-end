@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 import oauth from 'panoptes-client/lib/oauth';
 
 import Main from './components/Main';
-import config from './config';
+import { config } from './config';
 import configureStore from './store';
 
 import './styles/main.styl';
@@ -15,7 +15,7 @@ const store = configureStore();
 const history = createHistory();
 
 // TODO: Make app ID dynamic between env
-oauth.init(config.dev.panoptesAppId)
+oauth.init(config.panoptesAppId)
   .then(() => {
     ReactDOM.render((
       <Provider store={store}>
