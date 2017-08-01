@@ -14,7 +14,13 @@
       font-size: 0.8em
       font-weight: bold
 
+    .nav__list-item--social-media
+      svg
+        &:hover, &:focus
+          fill: #004b54 !important
+
   &__section
+    position: relative
     width: 100%
 
     .nav__list-item
@@ -24,6 +30,7 @@
         color: darken(#5C5C5C, 60%) !important
 
     &--small
+      @extends .footer__section
       font-size: 0.8em
 
   &__divider
@@ -34,3 +41,19 @@
     margin: 0
     padding: 0
     width: 100%
+
+  &__easter-egg
+    bottom: 0
+    display: inline-block
+    height: 74px
+    margin: 0 !important
+    opacity: 0
+    position: absolute
+    right: 0
+    transition: opacity 0.5s ease
+    transition-delay: 0.25s
+    width: 62px
+    z-index: 1
+
+    &:hover
+      opacity: 1

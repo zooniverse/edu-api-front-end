@@ -17,6 +17,10 @@ const setLoginUser = (state, user) => {
   return { ...state, initialised: true, user };
 };
 
+const setAdminUser = (state, isAdmin) => {
+  return { ...state, admin: isAdmin };
+};
+
 const fetchingUser = (state, fetching) => {
   return { ...state, fetching };
 };
@@ -40,10 +44,7 @@ Effect('checkLoginUser', () => {
 
 Effect('loginToPanoptes', () => {
   // Returns a login page URL for the user to navigate to.
-  oauth.signIn(computeRedirectURL(window))
-    .then((user) => {
-      console.log('user', user);
-    });
+  oauth.signIn(computeRedirectURL(window));
 });
 
 Effect('logoutFromPanoptes', () => {
@@ -58,6 +59,7 @@ Effect('logoutFromPanoptes', () => {
 const auth = State('auth', {
   // Initial State
   initial: {
+    admin: false,
     error: null,
     fetching: false,
     initialised: false,
@@ -67,6 +69,7 @@ const auth = State('auth', {
   // Actions
   fetchingUser,
   setLoginUser,
+  setAdminUser,
   setError,
   toggleRegistrationForm
 });

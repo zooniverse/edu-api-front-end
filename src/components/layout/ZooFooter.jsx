@@ -1,13 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Footer from 'grommet/components/Footer';
-import Box from 'grommet/components/Box';
 import Section from 'grommet/components/Section';
 import Columns from 'grommet/components/Columns';
 import Menu from 'grommet/components/Menu';
-import Title from 'grommet/components/Title';
 import Anchor from 'grommet/components/Anchor';
 import Button from 'grommet/components/Button';
+import Image from 'grommet/components/Image';
 import SocialFacebookOptionIcon from 'grommet/components/icons/base/SocialFacebookOption';
 import SocialTwitterIcon from 'grommet/components/icons/base/SocialTwitter';
 import SocialInstagramIcon from 'grommet/components/icons/base/SocialInstagram';
@@ -15,7 +14,7 @@ import { ZooniverseLogotype } from 'zooniverse-react-components';
 
 const ZooFooter = (props) => {
   const createKeyedAnchorItem = (navItem, i) => {
-    return React.cloneElement(navItem, { key: `navItem-${i}` });
+    return (<span key={`navItem-${i}`}>{navItem}</span>);
   };
 
   return (
@@ -35,48 +34,52 @@ const ZooFooter = (props) => {
         pad={{ horizontal: 'large', vertical: 'medium' }}
         margin={{ horizontal: 'large', vertical: 'none' }}
       >
-        <div className="footer__logo"><Anchor href="https://www.zooniverse.org"><ZooniverseLogotype /></Anchor><br />People Powered Research</div>
-        <Menu className="footer__nav" direction="row">
+        {props.homeLogoDiv}
+        <Menu className="footer__nav" direction="row" inline={true} responsive={false}>
           {props.socialNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
         </Menu>
       </Section>
       <Section pad={{ horizontal: 'large', vertical: 'none' }} full="horizontal">
         <hr className="footer__divider" />
       </Section>
-      <Section direction="row" className="footer__section" pad={{ horizontal: 'large', vertical: 'medium' }}>
+      <Section direction="row" className="footer__section" pad={{ horizontal: 'large', vertical: 'medium' }} margin={{ top: 'none', bottom: 'large', left: 'none', right: 'none' }}>
         <Columns maxCount={6} masonry={true} size="small" >
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.projectNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.aboutNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.getInvolvedNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.talkNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.buildNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
-          <Menu className="footer__nav">
+          <Menu className="footer__nav" margin={{ horizontal: 'none', vertical: 'small' }}>
             {props.newsNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
           </Menu>
         </Columns>
       </Section>
       <Section
+        align="center"
         className="footer__section--small"
         colorIndex={props.smallSectionColorIndex}
+        direction="row"
         full="horizontal"
         pad={{ horizontal: 'large', vertical: 'none' }}
         justify="between"
       >
-        <Menu className="footer__nav" direction="row" inline={true}>
+        <Menu className="footer__nav" direction="row" inline={true} responsive={false}>
           {props.policyNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
         </Menu>
-        {props.adminContainer &&
-          props.adminContainer}
+        <div>
+          {props.adminContainer}
+          <Image className="footer__easter-egg" src="/images/penguin.png" alt="" />
+        </div>
       </Section>
     </Footer>
   );
@@ -105,6 +108,7 @@ ZooFooter.defaultProps = {
     <Anchor className="nav__list-item" href="https://www.zooniverse.org/get-involved/call-for-projects">Call for Projects</Anchor>,
     <Anchor className="nav__list-item" href="https://www.zooniverse.org/collections">Collections</Anchor>
   ],
+  homeLogoDiv: <div className="footer__logo"><Anchor href="https://www.zooniverse.org"><ZooniverseLogotype /></Anchor><br />People Powered Research</div>,
   mainSectionColorIndex: "light-1",
   newsNavList: [
     <Anchor className="nav__list-header" href="#">News</Anchor>,
@@ -126,9 +130,9 @@ ZooFooter.defaultProps = {
     // Buttons have to be used because Icons used in Anchors in a Box (or things that are sub-classes of a Box) that has its colorIndex set wiill be opinionated.
     // The styles for a Box in that case will supercede the colorIndex set on the Icon.
     // However there is a related bug: https://github.com/grommet/grommet/issues/1513
-    <Button href="https://www.facebook.com/therealzooniverse" a11yTitle="Facebook"><SocialFacebookOptionIcon colorIndex="brand" size="small" /> </Button>,
-    <Button href="https://twitter.com/the_zooniverse" a11yTitle="Twitter"><SocialTwitterIcon colorIndex="brand" size="small" /></Button>,
-    <Button href="https://www.instagram.com/the.zooniverse/" a11yTitle="Instagram"><SocialInstagramIcon colorIndex="brand" size="small" /></Button>
+    <Button className="nav__list-item--social-media" href="https://www.facebook.com/therealzooniverse" a11yTitle="Facebook"><SocialFacebookOptionIcon colorIndex="brand" size="small" /> </Button>,
+    <Button className="nav__list-item--social-media" href="https://twitter.com/the_zooniverse" a11yTitle="Twitter"><SocialTwitterIcon colorIndex="brand" size="small" /></Button>,
+    <Button className="nav__list-item--social-media" href="https://www.instagram.com/the.zooniverse/" a11yTitle="Instagram"><SocialInstagramIcon colorIndex="brand" size="small" /></Button>
   ],
   talkNavList: [
     <Anchor className="nav__list-header" href="https://www.zooniverse.org/talk">Talk</Anchor>
@@ -149,6 +153,10 @@ ZooFooter.propTypes = {
     PropTypes.node,
     PropTypes.string
   ])).isRequired,
+  homeLogoDiv: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.string
+  ]),
   mainSectionColorIndex: PropTypes.string,
   newsNavList: PropTypes.arrayOf(PropTypes.oneOfType([
     PropTypes.node,
