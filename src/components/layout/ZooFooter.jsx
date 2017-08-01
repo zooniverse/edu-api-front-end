@@ -77,8 +77,7 @@ const ZooFooter = (props) => {
           {props.policyNavList.map((navItem, i) => createKeyedAnchorItem(navItem, i))}
         </Menu>
         <div>
-          {props.adminContainer &&
-            props.adminContainer}
+          {props.adminContainer}
           <Image className="footer__easter-egg" src="/images/penguin.png" alt="" />
         </div>
       </Section>
