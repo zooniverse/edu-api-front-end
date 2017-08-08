@@ -22,13 +22,15 @@ if (!env.match(/^(production|staging|development)$/)) {
 
 const baseConfig = {
   'development': {
+    astroProjects: ['1315'],
     panoptesAppId: '397e9bf4e29e75c0a092261ebe3338d3ef2687f2c5935d55c7ca0f63ecc2dd33',
-    astroProjects: ['1315']
+    root: 'https://education.staging.zooniverse.org/'
   },
   'production': {
-    panoptesAppId: '',
-    astroProjects: []
-  },
+    astroProjects: [],
+    panoptesAppId: '47f9799996f91be6d0ee386dbcf044fcb43a37b4d07ac1b0787002111e61a152',
+    root: 'https://education-api.zooniverse.org/'
+  }
 };
 baseConfig.staging = baseConfig.development;
 
