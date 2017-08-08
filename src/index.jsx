@@ -1,6 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+
+//TEMPORARY: Use hash routing so we can actually reload the page on localhost.
+//REMINDER TO SHAUN: revert back to Browser Router before PR.
+//import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { HashRouter as Router, Route } from 'react-router-dom';
+
 import { Provider } from 'react-redux';
 import oauth from 'panoptes-client/lib/oauth';
 import apiClient from 'panoptes-client/lib/api-client';

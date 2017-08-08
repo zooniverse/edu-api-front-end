@@ -15,6 +15,7 @@ export default function Home() {
     <Section colorIndex="light-2">
       <Anchor path="/astro" onClick={handleSettingProjectCollection.bind(null, config.astroProjects)}>Introduction to Astronomy</Anchor>
       <Anchor path="/" onClick={handleSettingProjectCollection.bind(null, [])}>Wildcam Darian: Labs</Anchor>
+      <Anchor path="/tester" onClick={handleSettingProjectCollection.bind(null, [])}>Tester</Anchor>
     </Section>
   );
 };
