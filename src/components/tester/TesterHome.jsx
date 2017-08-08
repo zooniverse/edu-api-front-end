@@ -16,9 +16,6 @@ class TesterHome extends React.Component {
   }
 
   render() {
-    console.log('---'.repeat(80));
-    console.log(this.props.status === CLASSROOMS_STATUS.SUCCESS);
-    
     return (
       <div>
         <h1>CLASSROOMS</h1>
