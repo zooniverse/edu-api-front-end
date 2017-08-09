@@ -43,7 +43,7 @@ Effect('getClassrooms', () => {
   get('teachers/classrooms/')
   .then((response) => {
     if (!response) { throw 'ERROR (ducks/classrooms/getClassrooms): No response'; }
-    if (response.statusCode === 200 &&
+    if (response.ok &&
         response.body && response.body.data) {
       return response.body.data;
     }
