@@ -13,6 +13,7 @@ import AdminContainer from '../containers/layout/AdminContainer';
 import AdminLayoutIndicator from './layout/AdminLayoutIndicator';
 import AuthContainer from '../containers/layout/AuthContainer';
 import AstroHome from './astro/AstroHome';
+import TesterHome from './tester/TesterHome';
 
 const Main = ({ admin }) => {
   const mainHeaderNavList = [
@@ -34,6 +35,7 @@ const Main = ({ admin }) => {
           <Route exact path="/" component={Home} />
           <Route path="/about" component={AboutLayout} />
           <Route path="/astro" component={AstroHome} />
+          <Route path="/tester" component={TesterHome} />
         </Switch>
         <ZooFooter adminContainer={<AdminContainer />} />
       </Box>
