@@ -3,13 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 import {
-  CLASSROOMS_STATUS, CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES,
+  CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES
 } from '../../ducks/classrooms';
-  
-import Section from 'grommet/components/Section';
-import Heading from 'grommet/components/Heading';
-import List from 'grommet/components/List';
-import ListItem from 'grommet/components/ListItem';
+import {
+  ASSIGNMENTS_INITIAL_STATE, ASSIGNMENTS_PROPTYPES
+} from '../../ducks/assignments';
+import ClassroomManager from '../../components/common/ClassroomManager';
 
 class ClassroomManagerContainer extends React.Component {
   constructor(props) {
@@ -17,55 +16,41 @@ class ClassroomManagerContainer extends React.Component {
   }
 
   componentDidMount() {
-    Actions.getClassrooms();
+    Actions.getClassrooms().then(() => {
+      this.props.classrooms.forEach((classroom) => {
+        Actions.getAssignments(classroom.id);
+      });
+    });
   }
 
   render() {
     return (
-      <Section>
-        <Heading tag="h3">Classrooms</Heading>
-        {this.render_status()}
-        <List>
-          {this.props.status === CLASSROOMS_STATUS.SUCCESS &&
-            this.props.classrooms.map((classroom, i)=>{
-            return (
-              <ListItem key={`classroom_${i}`}>
-                <div>{classroom.id}</div>
-                <div>{classroom.name}</div>
-                <div>{classroom.description}</div>
-              </ListItem>
-            );
-          })}
-        </List>
-      </Section>
+      <ClassroomManager
+        assignments={this.props.assignments}
+        assignmentsStatus={this.props.assignmentsStatus}
+        classrooms={this.props.classrooms}
+        classroomInstructions={this.props.classroomInstructions}
+        classroomsStatus={this.props.classroomsStatus}
+      />
     );
-  }
-
-  render_status() {
-    if (this.props.status === CLASSROOMS_STATUS.FETCHING) {
-      return (<div>Loading...</div>);
-    } else if (this.props.status === CLASSROOMS_STATUS.ERROR) {
-      return (<div>ERROR!</div>);
-    } else if (this.props.status === CLASSROOMS_STATUS.SUCCESS) {
-      return (<div>Ready!</div>);
-    }
-      
-    return null;
   }
 }
 
 ClassroomManagerContainer.propTypes = {
-  ...CLASSROOMS_PROPTYPES,
+  ...ASSIGNMENTS_PROPTYPES,
+  ...CLASSROOMS_PROPTYPES
 };
 
 ClassroomManagerContainer.defaultProps = {
-  ...CLASSROOMS_INITIAL_STATE,
+  ...ASSIGNMENTS_INITIAL_STATE,
+  ...CLASSROOMS_INITIAL_STATE
 };
 
 const mapStateToProps = (state) => ({
+  assignments: state.assignments.assignments,
+  assignmentsStatus: state.assignments.status,
   classrooms: state.classrooms.classrooms,
-  error: state.classrooms.error,
-  status: state.classrooms.status,
+  classroomsStatus: state.classrooms.status
 });
 
 export default connect(mapStateToProps)(ClassroomManagerContainer);

@@ -1,6 +1,6 @@
 import { State, Effect, Actions } from 'jumpstate';
-import { get } from '../lib/edu-api';
 import PropTypes from 'prop-types';
+import { get } from '../lib/edu-api';
 
 // Constants
 const CLASSROOMS_STATUS = {
@@ -25,7 +25,7 @@ const CLASSROOMS_PROPTYPES = {
 
 // Synchonous actions
 const setStatus = (state, status) => {
-  return { ...state, status }
+  return { ...state, status };
 };
 
 const setClassrooms = (state, classrooms) => {
@@ -39,23 +39,24 @@ const setError = (state, error) => {
 // Effects are for async actions and get automatically to the global Actions list
 Effect('getClassrooms', () => {
   Actions.classrooms.setStatus(CLASSROOMS_STATUS.FETCHING);
-  
-  get('teachers/classrooms/')
-  .then((response) => {
-    if (!response) { throw 'ERROR (ducks/classrooms/getClassrooms): No response'; }
-    if (response.ok &&
-        response.body && response.body.data) {
-      return response.body.data;
-    }
-    throw 'ERROR (ducks/classrooms/getClassrooms): Invalid response';     
-  })
-  .then((data) => {
-    Actions.classrooms.setStatus(CLASSROOMS_STATUS.SUCCESS);
-    Actions.classrooms.setClassrooms(data);
-  }).catch((error) => {
-    Actions.classrooms.setStatus(CLASSROOMS_STATUS.ERROR);
-    Actions.classrooms.setError(error);
-  });
+
+  return get('teachers/classrooms/')
+    .then((response) => {
+      if (!response) { throw 'ERROR (ducks/classrooms/getClassrooms): No response'; }
+      if (response.ok &&
+          response.body && response.body.data) {
+        return response.body.data;
+      }
+      throw 'ERROR (ducks/classrooms/getClassrooms): Invalid response';
+    })
+    .then((data) => {
+      Actions.classrooms.setStatus(CLASSROOMS_STATUS.SUCCESS);
+      Actions.classrooms.setClassrooms(data);
+    }).catch((error) => {
+      Actions.classrooms.setStatus(CLASSROOMS_STATUS.ERROR);
+      Actions.classrooms.setError(error);
+      console.error(error);
+    });
 });
 
 const classrooms = State('classrooms', {
