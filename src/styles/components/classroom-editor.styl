@@ -1,4 +1,25 @@
-.classroom-manager
+.classroom-editor
+  .manager-summary
+    background-color: white
+    border: solid 2px #DEDEDE
+    border-bottom: none  //Visually blend with manager-table
+    
+    .summary__return-link
+      font-size: 0.8em
+    
+    .grommetux-list
+      font-size: 0.75em
+      
+      .grommetux-list-item
+        border: none
+        
+        .grommetux-label
+          flex: 0 0 auto
+          width: 16em
+          font-size: inherit
+          margin: 0
+          margin-right: 2em
+  
   .manager-table
     background-color: white
     border: solid 2px #DEDEDE
@@ -23,33 +44,26 @@
       // text-align: left
 
     &__headers
+      background-color: GREY_5
+      font-family: "Roboto Mono", monospace
+      font-size: 0.75em
+      
       .headers__header
-        font-family: "Roboto Mono", monospace
-        font-size: 0.75em
         font-weight: bold
         letter-spacing: 1px
         text-transform: uppercase
 
-    &__button--as-link
-      border: none
-      color: #00969c !important
+    &__row-data
       font-family: "Roboto Mono", monospace
-      font-size: 0.75em !important
-      font-weight: bold
-      letter-spacing: 1px
-      line-height: 1em
-
-      &:hover, &:focus
-        color: darken(#00969c, 40%) !important
-
-    &__row-header
-      background-color: GREY_5
-      border-top: solid 2px #DEDEDE !important
-      border-bottom: solid 2px #DEDEDE !important
-      font-family: "Roboto Mono", monospace
-      font-size: 0.9em
-      font-weight: bold
-
+      font-size: 0.75em
+      
+      td  //Overwrite standard grommet padding
+        padding-top: 0.2em
+        padding-bottom: 0.2em
+      
+      td:first-child
+        font-weight: bold
+      
     &__row-data:not(:last-child)
       border-bottom: solid 2px #DEDEDE
 
@@ -60,3 +74,6 @@
     .grommetux-table__table
       margin: 0
 
+  .join-link
+    margin-left: 2em
+    margin-right: 2em

@@ -8,6 +8,7 @@ import {
   ASSIGNMENTS_INITIAL_STATE, ASSIGNMENTS_PROPTYPES
 } from '../../ducks/assignments';
 import ClassroomManager from '../../components/common/ClassroomManager';
+import ClassroomEditor from '../../components/common/ClassroomEditor';
 
 export class ClassroomManagerContainer extends React.Component {
   constructor(props) {
@@ -26,6 +27,7 @@ export class ClassroomManagerContainer extends React.Component {
 
   componentDidMount() {
     Actions.getClassroomsAndAssignments();
+    Actions.classrooms.selectClassroom(null);  //Reset selected classroom.
   }
 
   copyJoinLink() {
@@ -34,6 +36,10 @@ export class ClassroomManagerContainer extends React.Component {
 
   resetToastState() {
     this.setState({ toast: { message: null, status: null } });
+  }
+  
+  selectClassroom(classroom) {
+    Actions.classrooms.selectClassroom(classroom);
   }
 
   deleteClassroom(id) {
@@ -44,33 +50,66 @@ export class ClassroomManagerContainer extends React.Component {
       Actions.getClassroomsAndAssignments();
     });
   }
+  
+  removeStudentFromClassroom(classroomId, studentId) {
+    //TODO
+    console.log('TODO!');
+    alert(`TODO! Remove student ${studentId} from classroom ${classroomId}`);
+  }
 
   render() {
-    return (
-      <ClassroomManager
-        assignments={this.props.assignments}
-        assignmentsStatus={this.props.assignmentsStatus}
-        classrooms={this.props.classrooms}
-        classroomInstructions={this.props.classroomInstructions}
-        classroomsStatus={this.props.classroomsStatus}
-        copyJoinLink={this.copyJoinLink}
-        deleteClassroom={this.deleteClassroom}
-        resetToastState={this.resetToastState}
-        showCreateForm={this.props.showCreateForm}
-        toast={this.state.toast}
-      />
-    );
+    //View all classes
+    if (!this.props.selectedClassroom) {
+      return (
+        <ClassroomManager
+          assignments={this.props.assignments}
+          assignmentsStatus={this.props.assignmentsStatus}
+          classrooms={this.props.classrooms}
+          classroomInstructions={this.props.classroomInstructions}
+          classroomsStatus={this.props.classroomsStatus}
+          copyJoinLink={this.copyJoinLink}
+          selectClassroom={this.selectClassroom}
+          deleteClassroom={this.deleteClassroom}
+          resetToastState={this.resetToastState}
+          showCreateForm={this.props.showCreateForm}
+          toast={this.state.toast}
+        />
+      );
+      
+    //View a single class
+    } else {
+      return (
+        <ClassroomEditor
+          selectedClassroom={this.props.selectedClassroom}
+          assignments={this.props.assignments}
+          assignmentsStatus={this.props.assignmentsStatus}
+          
+          selectClassroom={this.selectClassroom}
+          removeStudentFromClassroom={this.removeStudentFromClassroom}
+          
+          showCreateForm={this.props.showCreateForm}
+          
+          copyJoinLink={this.copyJoinLink}
+          resetToastState={this.resetToastState}
+          toast={this.state.toast}
+        />
+      );
+    }
   }
 }
 
 ClassroomManagerContainer.propTypes = {
   ...ASSIGNMENTS_PROPTYPES,
-  ...CLASSROOMS_PROPTYPES
+  ...CLASSROOMS_PROPTYPES,
+  assignmentsStatus: ASSIGNMENTS_PROPTYPES.status,
+  classroomsStatus: CLASSROOMS_PROPTYPES.status,
 };
 
 ClassroomManagerContainer.defaultProps = {
   ...ASSIGNMENTS_INITIAL_STATE,
-  ...CLASSROOMS_INITIAL_STATE
+  ...CLASSROOMS_INITIAL_STATE,
+  assignmentsStatus: ASSIGNMENTS_INITIAL_STATE.status,
+  classroomsStatus: CLASSROOMS_INITIAL_STATE.status,
 };
 
 const mapStateToProps = (state) => ({
@@ -78,7 +117,8 @@ const mapStateToProps = (state) => ({
   assignmentsStatus: state.assignments.status,
   classrooms: state.classrooms.classrooms,
   classroomsStatus: state.classrooms.status,
-  showCreateForm: state.classrooms.showCreateForm
+  selectedClassroom: state.classrooms.selectedClassroom,
+  showCreateForm: state.classrooms.showCreateForm,
 });
 
 export default connect(mapStateToProps)(ClassroomManagerContainer);
