@@ -15,10 +15,17 @@ This component has two functions:
 import { State, Effect, Actions } from 'jumpstate';
 import PropTypes from 'prop-types';
 import superagent from 'superagent';
-import { constructWhereClause } from '../lib/mapexplorer-helpers.js';
+import { constructWhereClause, sqlString } from '../lib/mapexplorer-helpers.js';
 
 // Constants
 const MAPEXPLORER_MARKERS_STATUS = {
+  IDLE: 'idle',
+  FETCHING: 'fetching',
+  SUCCESS: 'success',
+  ERROR: 'error',
+};
+
+const MAPEXPLORER_CAMERA_STATUS = {
   IDLE: 'idle',
   FETCHING: 'fetching',
   SUCCESS: 'success',
@@ -32,6 +39,12 @@ const MAPEXPLORER_INITIAL_STATE = {
   markersError: null,
   markersDataCount: 0,
   
+  activeCameraId: null,
+  activeCameraMetadata: null,
+  activeCameraMetadataStatus: MAPEXPLORER_CAMERA_STATUS.IDLE,
+  activeCameraData: null,
+  activeCameraDataStatus: MAPEXPLORER_CAMERA_STATUS.IDLE,
+  
   filters: {},  //Selected filtes
 };
 
@@ -40,6 +53,12 @@ const MAPEXPLORER_PROPTYPES = {
   markersError: PropTypes.object,
   markersStatus: PropTypes.string,
   markersDataCount: PropTypes.number,
+  
+  activeCameraId: PropTypes.string,
+  activeCameraMetadata: PropTypes.object,
+  activeCameraMetadataStatus: PropTypes.string,
+  activeCameraData: PropTypes.arrayOf(PropTypes.object),
+  activeCameraDataStatus: PropTypes.string,
   
   filters: PropTypes.object,  //Dynamically constructed object.
 };
@@ -63,6 +82,37 @@ const setMarkersError = (state, markersError) => {
 
 const setMarkersDataCount = (state, markersDataCount) => {
   return { ...state, markersDataCount };
+};
+
+const resetActiveCamera = (state) => {
+  return {
+    ...state,
+    activeCameraId: MAPEXPLORER_INITIAL_STATE.activeCameraId,
+    activeCameraMetadata: MAPEXPLORER_INITIAL_STATE.activeCameraMetadata,
+    activeCameraMetadataStatus: MAPEXPLORER_INITIAL_STATE.activeCameraMetadataStatus,
+    activeCameraData: MAPEXPLORER_INITIAL_STATE.activeCameraData,
+    activeCameraDataStatus: MAPEXPLORER_INITIAL_STATE.activeCameraDataStatus,
+  };
+};
+
+const setActiveCameraId = (state, activeCameraId) => {
+  return { ...state, activeCameraId };
+};
+
+const setActiveCameraMetadata = (state, activeCameraMetadata) => {
+  return { ...state, activeCameraMetadata };
+};
+
+const setActiveCameraMetadataStatus = (state, activeCameraMetadataStatus) => {
+  return { ...state, activeCameraMetadataStatus };
+};
+
+const setActiveCameraData = (state, activeCameraData) => {
+  return { ...state, activeCameraData };
+};
+
+const setActiveCameraDataStatus = (state, activeCameraDataStatus) => {
+  return { ...state, activeCameraDataStatus };
 };
 
 // Synchonous actions: User-Selected Filters
@@ -118,12 +168,9 @@ Effect('getMapMarkers', (payload = {}) => {
   
   Actions.mapexplorer.setMarkersStatus(MAPEXPLORER_MARKERS_STATUS.FETCHING);
   const where = constructWhereClause(mapConfig, selectedFilters);
-  const url = mapConfig.database.urls.geojson.replace(
-    '{SQLQUERY}',
+  const url = mapConfig.database.urls.geojson.replace('{SQLQUERY}',
     encodeURIComponent(mapConfig.database.queries.selectCameraCount.replace('{WHERE}', where))
   );
-  
-  console.log('-'.repeat(40));
   
   superagent.get(url)
   .then(response => {
@@ -154,6 +201,78 @@ Effect('getMapMarkers', (payload = {}) => {
   });
 });
 
+//----------------------------------------------------------------
+
+Effect('getActiveCamera', (payload = {}) => {
+  const mapConfig = payload.mapConfig;
+  const selectedFilters = payload.filters;
+  const cameraId = payload.cameraId;
+  
+  if (!mapConfig) return;  
+  if (!cameraId) return;
+  
+  Actions.mapexplorer.setActiveCameraId(cameraId);
+  Actions.mapexplorer.setActiveCameraDataStatus(MAPEXPLORER_CAMERA_STATUS.FETCHING);
+  Actions.mapexplorer.setActiveCameraMetadataStatus(MAPEXPLORER_CAMERA_STATUS.FETCHING);
+  
+  let where, url;
+  
+  //Get Camera Data
+  //--------------------------------
+  where = constructWhereClause(mapConfig, selectedFilters);
+  where = (where === '')  //TODO: Move this to the project config. This is very project-specific.
+    ? ` WHERE camera LIKE '${sqlString(cameraId)}'`
+    : where + ` AND camera LIKE '${sqlString(cameraId)}'`;
+  url = mapConfig.database.urls.json.replace('{SQLQUERY}',
+    encodeURIComponent(mapConfig.database.queries.selectCameraData.replace('{WHERE}', where))
+  );
+  superagent.get(url)
+  .then(response => {
+    if (!response) { throw 'ERROR (ducks/mapexplorer/getActiveCamera Data): No response'; }
+    if (response.ok && response.body) {
+      return response.body;
+    }
+    throw 'ERROR (ducks/mapexplorer/getActiveCamera Data): invalid response';
+  })
+  .then(json => {
+    Actions.mapexplorer.setActiveCameraDataStatus(MAPEXPLORER_CAMERA_STATUS.SUCCESS);
+    Actions.mapexplorer.setActiveCameraData(json.rows);    
+  })
+  .catch(err => {
+    Actions.mapexplorer.setActiveCameraDataStatus(MAPEXPLORER_CAMERA_STATUS.ERROR);
+    console.error(err);
+  });
+  //--------------------------------
+  
+  //Get Camera Metadata
+  //--------------------------------
+  where = ` WHERE id LIKE '${sqlString(cameraId)}'`;  //TODO: Move this to the project config. This is very project-specific.
+  url = mapConfig.database.urls.json.replace('{SQLQUERY}',
+    encodeURIComponent(mapConfig.database.queries.selectCameraMetadata.replace('{WHERE}', where))
+  );
+  superagent.get(url)
+  .then(response => {
+    if (!response) { throw 'ERROR (ducks/mapexplorer/getActiveCamera Metadata): No response'; }
+    if (response.ok && response.body) {
+      return response.body;
+    }
+    throw 'ERROR (ducks/mapexplorer/getActiveCamera Metadata): invalid response';
+  })
+  .then(json => {
+    Actions.mapexplorer.setActiveCameraMetadataStatus(MAPEXPLORER_CAMERA_STATUS.SUCCESS);
+    if (json && json.rows) {
+      Actions.mapexplorer.setActiveCameraMetadata(json.rows[0]);  //SELECT query should only return one result.
+    } else {
+      Actions.mapexplorer.setActiveCameraMetadata(null);
+    }    
+  })
+  .catch(err => {
+    Actions.mapexplorer.setActiveCameraMetadataStatus(MAPEXPLORER_CAMERA_STATUS.ERROR);
+    console.error(err);
+  });
+  //--------------------------------
+});
+
 /*
 --------------------------------------------------------------------------------
  */
@@ -166,6 +285,12 @@ const mapexplorer = State('mapexplorer', {
   setMarkersData,
   setMarkersError,
   setMarkersDataCount,
+  resetActiveCamera,
+  setActiveCameraId,
+  setActiveCameraMetadata,
+  setActiveCameraMetadataStatus,
+  setActiveCameraData,
+  setActiveCameraDataStatus,
   addFilterSelectionItem,
   removeFilterSelectionItem,
   setFilterSelectionItem,
@@ -174,6 +299,7 @@ const mapexplorer = State('mapexplorer', {
 export default mapexplorer;
 export {
   MAPEXPLORER_MARKERS_STATUS,
+  MAPEXPLORER_CAMERA_STATUS,
   MAPEXPLORER_INITIAL_STATE,
   MAPEXPLORER_PROPTYPES,
 };

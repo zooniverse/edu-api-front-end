@@ -26,10 +26,16 @@ Notable components:
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Actions } from 'jumpstate';  //TEST
 
 import Box from 'grommet/components/Box';
-import MapVisuals from './MapVisuals'
-import MapControls from './MapControls'
+import MapVisuals from './MapVisuals';
+import MapControls from './MapControls';
+import CameraViewer from '../../components/maps/CameraViewer';
+
+import {
+  MAPEXPLORER_INITIAL_STATE, MAPEXPLORER_PROPTYPES,
+} from '../../ducks/mapexplorer';
 
 class MapExplorer extends React.Component {
   constructor(props) {
@@ -44,9 +50,18 @@ class MapExplorer extends React.Component {
         <MapVisuals
           mapConfig={this.props.mapConfig}
         />
-        <MapControls
-          mapConfig={this.props.mapConfig}
-        />
+        {(!this.props.activeCameraId)
+          ? <MapControls
+              mapConfig={this.props.mapConfig}
+            />
+          : <CameraViewer
+              mapConfig={this.props.mapConfig}
+              activeCameraData={this.props.activeCameraData}
+              activeCameraDataStatus={this.props.activeCameraDataStatus}
+              activeCameraMetadata={this.props.activeCameraMetadata}
+              activeCameraMetadataStatus={this.props.activeCameraMetadataStatus}
+            />
+        }
       </Box>
     );
   }
@@ -54,10 +69,18 @@ class MapExplorer extends React.Component {
 
 MapExplorer.propTypes = {
   mapConfig: PropTypes.object,
+  ...MAPEXPLORER_PROPTYPES,
 };
 MapExplorer.defaultProps = {
   mapConfig: null,
+  ...MAPEXPLORER_INITIAL_STATE,
 };
-const mapStateToProps = (state) => ({});
+const mapStateToProps = (state) => ({
+  activeCameraId: state.mapexplorer.activeCameraId,
+  activeCameraMetadata: state.mapexplorer.activeCameraMetadata,
+  activeCameraMetadataStatus: state.mapexplorer.activeCameraMetadataStatus,
+  activeCameraData: state.mapexplorer.activeCameraData,
+  activeCameraDataStatus: state.mapexplorer.activeCameraDataStatus,
+});
 
 export default connect(mapStateToProps)(MapExplorer);
