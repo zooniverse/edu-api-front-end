@@ -71,13 +71,84 @@ const mapConfig = {
     ],
     extraLayers: [
       {
-        'name': 'Vegetation Types',
-        'url': 'https://wildcam-darien.carto.com/api/v2/sql?q=SELECT%20*%20FROM%20vegetation_map',
-        'styles': {
+        'name': 'darien_national_park',
+        'label': 'Darien National Park',
+        'query': 'SELECT * FROM darien_national_park',
+        'style': function (feature) {
+          return {
+            stroke: true,
+            color: '#3cc',
+            fill: false,
+          };
+        },
+      },
+      {
+        'name': 'soberania_national_park',
+        'label': 'Soberania National Park',
+        'query': 'SELECT * FROM soberania_national_park',
+        'style': function (feature) {
+          return {
+            stroke: true,
+            color: '#3cc',
+            fill: false,
+          };
+        },
+      },
+      {
+        'name': 'veg_type',
+        'label': 'Habitats',
+        'query': 'SELECT * FROM vegetation_map',
+        'style': function (feature) {
+          let color = '#ccc';
+          if (feature && feature.properties) {
+            switch (feature.properties.veg_type) {
+              case 'Evergreen tropical ombrophilous broadleaf submontane (500 - 1,000 m Caribbean, 700 - 1,200 m Pacific)':
+                color = '#9c3'; break;
+              case 'Production system with significant natural or spontaneous woody vegetation (10 - 50%)':
+                color = '#993'; break;
+              case 'Production system with significant natural or spontaneous woody vegetation (<10%)':
+                color = '#693'; break;
+              case 'Evergreen ombrophylous tropical lowland broadleaf forest - heavily logged':
+                color = '#663'; break;
+              case 'Tropical lowland semi-deciduous forest - heavily logged':
+                color = '#393'; break;
+              case 'Water region':
+                color = '#39c'; break;
+              case 'Tropical lowland semi-deciduous forest':
+                color = '#9c6'; break;
+              case 'Tropical lowland semi-deciduous forest - minimally logged':
+                color = '#6c6'; break;
+              case 'Evergreen tropical ombrophilous broadleaf montane montane (1,000 - 1,500 m Caribbean, 1,200 - 1,800 m Pacific)':
+                color = '#cc6'; break;
+              case 'Evergreen, broad-leaved tropical broad-leaved evergreen forest':
+                color = '#9c9'; break;
+            }
+          }
           
-        }
+          return {
+            stroke: false,
+            fill: true,
+            fillColor: color,
+            fillOpacity: 0.5,
+          };
+        },
       },
     ],
+    'legend': {
+      'type': 'simple',
+      'items': {
+        '#9c3': 'Evergreen tropical ombrophilous broadleaf submontane (500 - 1,000 m Caribbean, 700 - 1,200 m Pacific)',
+        '#993': 'Production system with significant natural or spontaneous woody vegetation (10 - 50%)',
+        '#693': 'Production system with significant natural or spontaneous woody vegetation (<10%)',
+        '#663': 'Evergreen ombrophylous tropical lowland broadleaf forest - heavily logged',
+        '#393': 'Tropical lowland semi-deciduous forest - heavily logged',
+        '#39c': 'Water region',
+        '#9c6': 'Tropical lowland semi-deciduous forest',
+        '#6c6': 'Tropical lowland semi-deciduous forest - minimally logged',
+        '#cc6': 'Evergreen tropical ombrophilous broadleaf montane montane (1,000 - 1,500 m Caribbean, 1,200 - 1,800 m Pacific)',
+        '#9c9': 'Evergreen, broad-leaved tropical broad-leaved evergreen forest',
+      },
+    },
     'filters': {
       'data_choice': {
         'label': 'Species',
