@@ -18,13 +18,15 @@ import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 
 import Box from 'grommet/components/Box';
+import Button from 'grommet/components/Button';
 import MultiChoiceFilter from '../../components/maps/MultiChoiceFilter';
 import SuperDownloadButton from '../../components/common/SuperDownloadButton';
 
 import Accordion from 'grommet/components/Accordion';
 import AccordionPanel from 'grommet/components/AccordionPanel';
 
-import { constructWhereClause } from '../../lib/mapexplorer-helpers'
+import { constructWhereClause } from '../../lib/mapexplorer-helpers';
+import { ZooTran, ZooTranGetLanguage } from '../../lib/zooniversal-translator.js';
 
 import {
   MAPEXPLORER_INITIAL_STATE, MAPEXPLORER_PROPTYPES,
@@ -52,12 +54,14 @@ class MapControls extends React.Component {
     const hasAnySelections = this.props.filters && Object.keys(this.props.filters).length > 0;
     let statusMessage = '...';
     if (this.props.markersStatus === MAPEXPLORER_MARKERS_STATUS.FETCHING) {
-      statusMessage = 'Loading...';
+      statusMessage = ZooTran('Loading...');
     } else if (this.props.markersStatus === MAPEXPLORER_MARKERS_STATUS.ERROR) {
-      statusMessage = 'ERROR';
+      statusMessage = ZooTran('ERROR');
     } else if (this.props.markersStatus === MAPEXPLORER_MARKERS_STATUS.SUCCESS) {
-      statusMessage = `${this.props.markersDataCount} result(s)`;
+      statusMessage = `${this.props.markersDataCount} ${ZooTran('result(s)')}`;
     }
+    
+    const lang = ZooTranGetLanguage();
     
     return (
       <Box className="map-controls">
@@ -65,17 +69,40 @@ class MapControls extends React.Component {
           <AccordionPanel heading={statusMessage} className="map-controls-status">
             <SuperDownloadButton
               url={downloadUrl}
+              text={ZooTran('Download')}
+              useZooniversalTranslator={true}
             />
+            <Box
+              className="zooniversal-translator"
+              direction="row"
+              pad="small"
+              colorIndex="light-2"
+              margin="small"
+              align="center"
+              alignContent="between"
+              separator="horizontal"
+            >
+              <Button
+                className={(lang !== 'es') ? 'selected' : ''}
+                label="English"
+                onClick={() => { this.props.setLanguage('en') }}
+              />
+              <Button
+                className={(lang === 'es') ? 'selected' : ''}
+                label="Español"
+                onClick={() => { this.props.setLanguage('es') }}
+              />
+            </Box>
           </AccordionPanel>
         </Accordion>
         <Accordion openMulti={true}>
-          <AccordionPanel heading="Filters" className={'map-controls-filters ' + ((hasAnySelections) ? 'selected' : '')}>
+          <AccordionPanel heading={ZooTran('Filters')} className={'map-controls-filters ' + ((hasAnySelections) ? 'selected' : '')}>
             <Accordion openMulti={true}>
             {Object.keys(mapConfig.map.filters).map(key =>{
               const item = mapConfig.map.filters[key];
               if (item.type === "multichoice") {
                 return (
-                  <AccordionPanel heading={item.label} key={`map-controls-${key}`} className={(this.props.filters[key]) ? 'selected' : ''}>
+                  <AccordionPanel heading={ZooTran(item.label)} key={`map-controls-${key}`} className={(this.props.filters[key]) ? 'selected' : ''}>
                     <MultiChoiceFilter
                       filterKey={key}
                       filterLabel={item.label}
@@ -108,10 +135,12 @@ class MapControls extends React.Component {
 
 MapControls.propTypes = {
   mapConfig: PropTypes.object,
+  setLanguage: PropTypes.func,
   ...MAPEXPLORER_PROPTYPES,
 };
 MapControls.defaultProps = {
   mapConfig: null,
+  setLanguage: () => {},
   ...MAPEXPLORER_INITIAL_STATE,
 };
 const mapStateToProps = (state) => ({

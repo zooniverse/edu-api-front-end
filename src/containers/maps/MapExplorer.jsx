@@ -34,12 +34,18 @@ import MapControls from './MapControls';
 import CameraViewer from '../../components/maps/CameraViewer';
 
 import {
+  ZooTran, ZooTranSetLanguage,
+} from '../../lib/zooniversal-translator.js';
+
+import {
   MAPEXPLORER_INITIAL_STATE, MAPEXPLORER_PROPTYPES,
 } from '../../ducks/mapexplorer';
 
 class MapExplorer extends React.Component {
   constructor(props) {
     super(props);
+    
+    this.setLanguage = this.setLanguage.bind(this);
   }
   
   //----------------------------------------------------------------
@@ -53,6 +59,7 @@ class MapExplorer extends React.Component {
         {(!this.props.activeCameraId)
           ? <MapControls
               mapConfig={this.props.mapConfig}
+              setLanguage={this.setLanguage}
             />
           : <CameraViewer
               mapConfig={this.props.mapConfig}
@@ -64,6 +71,14 @@ class MapExplorer extends React.Component {
         }
       </Box>
     );
+  }
+  
+  setLanguage(lang) {
+    ZooTranSetLanguage(lang);
+    location.reload();  //Force a reload
+    //The ZooTran system is too decentralised and disconnected from the natural
+    //React and Redux structure that it requires a more promitive method of
+    //synchronising the output across all elements.
   }
 }
 
