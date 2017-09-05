@@ -1,48 +1,41 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Actions } from 'jumpstate';
+import { Link } from 'react-router-dom';
 import Box from 'grommet/components/Box';
 import Paragraph from 'grommet/components/Paragraph';
 import Button from 'grommet/components/Button';
 import Spinning from 'grommet/components/icons/Spinning';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
-import Toast from 'grommet/components/Toast';
 import Anchor from 'grommet/components/Anchor';
 import Layer from 'grommet/components/Layer';
 import EditIcon from 'grommet/components/icons/base/Edit';
 import CloseIcon from 'grommet/components/icons/base/Close';
 import CopyToClipboard from 'react-copy-to-clipboard';
+
 import {
   CLASSROOMS_STATUS, CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES
 } from '../../ducks/classrooms';
 import {
   ASSIGNMENTS_STATUS, ASSIGNMENTS_INITIAL_STATE, ASSIGNMENTS_PROPTYPES
 } from '../../ducks/assignments';
-import ClassroomCreateFormContainer from '../../containers/common/ClassroomCreateFormContainer';
+import ClassroomFormContainer from '../../containers/classrooms/ClassroomFormContainer';
 
-const ClassroomManager = (props) => {
+const ClassroomsManager = (props) => {
   // TODO: Pagination for Classrooms
+  const classroomInstructions = 'First, make sure your students have set up a Zooniverse account. Then create a classroom and share the classroom\'s unique join URL with your students to keep track of their progress as they work through each assignment. Students must be logged in to their Zooniverse accounts first to be able to use the join link. Share the URL under View Project with your students for them to complete the assignment.';
+
   return (
-    <Box
-      className="classroom-manager"
-      direction="column"
-      colorIndex="grey-5"
-      full={{ horizontal: true, vertical: false }}
-      pad="large"
-    >
+    <Box className="classrooms-manager">
       <Box align="center" direction="row" justify="between">
-        <Paragraph align="start" size="small">{props.classroomInstructions}</Paragraph>
+        <Paragraph align="start" size="small">{classroomInstructions}</Paragraph>
         <Button type="button" primary={true} label="Create New Classroom" onClick={props.toggleFormVisibility} />
       </Box>
-      {props.showCreateForm &&
+      {props.showForm &&
         <Layer closer={true} onClose={props.toggleFormVisibility}>
-          <ClassroomCreateFormContainer />
+          <ClassroomFormContainer heading="Create Classroom" submitLabel="Create" />
         </Layer>}
-      {props.toast && props.toast.message &&
-        <Toast status={props.toast.status ? props.toast.status : 'unknown'} onClose={props.resetToastState}>
-          {props.toast.message}
-        </Toast>}
       {(props.classrooms.length === 0 && props.classroomsStatus === CLASSROOMS_STATUS.FETCHING) &&
         <Spinning />}
       {props.classrooms.length === 0 && props.classroomsStatus === CLASSROOMS_STATUS.SUCCESS &&
@@ -63,6 +56,9 @@ const ClassroomManager = (props) => {
             // Can we get linked assignments with classrooms in single get request?
             // No, if we want this, then we need to open an issue with the API
             // TODO replace classifications_target with calculated percentage
+
+            // The trailing slash is inconsistent in React Router 4's match.url property...
+            const editURL = (props.match.url[props.match.url.length - 1] === '/') ? props.match.url : `${props.match.url}/`;
             return (
               <tbody className="manager-table__body" key={classroom.id}>
                 <TableRow>
@@ -71,12 +67,12 @@ const ClassroomManager = (props) => {
                       <span>
                         <Button
                           className="manager-table__button--edit"
-                          type="button"
-                          onClick={props.selectClassroom.bind(null, classroom)}
+                          path={`${editURL}classrooms/${classroom.id}`}
+                          onClick={() => { Actions.classrooms.selectClassroom(classroom); }}
                           icon={<EditIcon size="small" />}
-                        ></Button>
+                        />
                         {' '}{classroom.name}{' '}
-                        <CopyToClipboard text={joinURL} onCopy={props.copyJoinLink}>
+                        <CopyToClipboard text={joinURL} onCopy={() => { Actions.classrooms.setToastState({ status: 'ok', message: 'Copied join link.' }); }}>
                           <Button type="button" className="manager-table__button--as-link" plain={true} onClick={() => {}}>
                             Copy Join Link
                           </Button>
@@ -140,33 +136,24 @@ const ClassroomManager = (props) => {
   );
 };
 
-ClassroomManager.defaultProps = {
+ClassroomsManager.defaultProps = {
   classroomInstructions: '',
-  copyJoinLink: () => {},
   selectClassroom: () => {},
   deleteClassroom: () => {},
-  resetToastState: () => {},
-  showCreateForm: false,
-  toggleFormVisibility: Actions.classrooms.toggleCreateFormVisibility,
-  toast: null,
+  showForm: false,
+  toggleFormVisibility: Actions.classrooms.toggleFormVisibility,
   ...CLASSROOMS_INITIAL_STATE,
   ...ASSIGNMENTS_INITIAL_STATE
 };
 
-ClassroomManager.propTypes = {
+ClassroomsManager.propTypes = {
   classroomInstructions: PropTypes.string,
-  copyJoinLink: PropTypes.func,
   selectClassroom: PropTypes.func,
   deleteClassroom: PropTypes.func,
-  resetToastState: PropTypes.func,
-  showCreateForm: PropTypes.bool,
+  showForm: PropTypes.bool,
   toggleFormVisibility: PropTypes.func,
-  toast: PropTypes.shape({
-    message: null,
-    status: null
-  }),
   ...CLASSROOMS_PROPTYPES,
   ...ASSIGNMENTS_PROPTYPES
 };
 
-export default ClassroomManager;
+export default ClassroomsManager;

@@ -5,35 +5,27 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import sinon from 'sinon';
-import { ClassroomCreateFormContainer } from './ClassroomCreateFormContainer';
-
-const fields = {
-  name: 'My classroom',
-  subject: '',
-  school: '',
-  description: ''
-};
+import { ClassroomFormContainer } from './ClassroomFormContainer';
 
 const mockChangeEvent = { target: { id: 'name', value: 'My classroom' } };
 
-describe('<ClassroomCreateFormContainer />', function() {
+describe('<ClassroomFormContainer />', function() {
   let wrapper;
-  const onChangeSpy = sinon.spy(ClassroomCreateFormContainer.prototype, 'onChange');
-  const onSubmitStub = sinon.stub(ClassroomCreateFormContainer.prototype, 'onSubmit').callsFake(() => {});
+  const onChangeSpy = sinon.spy(ClassroomFormContainer.prototype, 'onChange');
+  const onSubmitStub = sinon.stub(ClassroomFormContainer.prototype, 'onSubmit').callsFake(() => {});
   before(function() {
-    wrapper = shallow(<ClassroomCreateFormContainer />);
+    wrapper = shallow(<ClassroomFormContainer />);
   });
 
   it('without crashing', function() {});
 
-  it('renders <ClassroomCreateForm />', function() {
-    expect(wrapper.find('ClassroomCreateForm')).to.have.lengthOf(1);
+  it('renders <ClassroomForm />', function() {
+    expect(wrapper.find('ClassroomForm')).to.have.lengthOf(1);
   });
 
-  it('sets fields state when onChange is called', function() {
+  it('calls onChange when change event happens', function() {
     wrapper.instance().onChange(mockChangeEvent);
     expect(onChangeSpy.calledOnce).to.be.true();
-    expect(wrapper.state('fields')).to.deep.equal(fields);
   });
 
   it('calls onSubmit', function() {

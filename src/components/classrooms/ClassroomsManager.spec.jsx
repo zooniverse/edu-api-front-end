@@ -5,7 +5,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import sinon from 'sinon';
-import ClassroomManager from './ClassroomManager';
+import ClassroomsManager from './ClassroomsManager';
 import { CLASSROOMS_STATUS } from '../../ducks/classrooms';
 import { ASSIGNMENTS_STATUS } from '../../ducks/assignments';
 
@@ -26,12 +26,11 @@ const classrooms = [
   { id: '7', name: 'Another classroom', joinToken: 'token2' }
 ];
 
-const toast = {
-  message: 'Copy successful',
-  status: 'ok'
+const match = {
+  url: ''
 };
 
-describe('<ClassroomManager />', function() {
+describe('<ClassroomsManager />', function() {
   let wrapper;
   const copyJoinLinkSpy = sinon.spy();
   const deleteClassroomSpy = sinon.spy();
@@ -39,13 +38,14 @@ describe('<ClassroomManager />', function() {
   const toggleFormVisibilitySpy = sinon.spy();
   before(function() {
     wrapper = shallow(
-      <ClassroomManager
+      <ClassroomsManager
         assignments={noAssignments}
+        assignmentsStatus={ASSIGNMENTS_STATUS.FETCHING}
         classroomInstructions={instructions}
         classroomsStatus={CLASSROOMS_STATUS.FETCHING}
-        assignmentsStatus={ASSIGNMENTS_STATUS.FETCHING}
         copyJoinLink={copyJoinLinkSpy}
         deleteClassroom={deleteClassroomSpy}
+        match={match}
         resetToastState={resetToastStateSpy}
         toggleFormVisibility={toggleFormVisibilitySpy}
       />
@@ -71,7 +71,7 @@ describe('<ClassroomManager />', function() {
     expect(wrapper.find('Box')).to.have.lengthOf(4);
     expect(wrapper.find('Table')).to.have.lengthOf(1);
     expect(wrapper.find('TableRow')).to.have.lengthOf(5);
-    expect(wrapper.find('Button')).to.have.lengthOf(5);
+    expect(wrapper.find('Button')).to.have.lengthOf(7);
     expect(wrapper.find('CopyToClipboard')).to.have.lengthOf(2);
     expect(wrapper.find('Spinning')).to.have.lengthOf(2);
   });
@@ -83,7 +83,7 @@ describe('<ClassroomManager />', function() {
 
   it('renders assignments data on successful load and there are some', function() {
     wrapper.setProps({ assignments });
-    expect(wrapper.find('Button')).to.have.lengthOf(7);
+    expect(wrapper.find('Button')).to.have.lengthOf(9);
     expect(wrapper.find('Anchor')).to.have.lengthOf(2);
     expect(wrapper.find('TableRow').last().find('td').first().text()).to.equal('Assignment 2');
   });

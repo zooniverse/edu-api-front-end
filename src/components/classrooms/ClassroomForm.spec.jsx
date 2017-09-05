@@ -5,15 +5,15 @@
 import React from 'react';
 import { mount } from 'enzyme';
 import sinon from 'sinon';
-import ClassroomCreateForm from './ClassroomCreateForm';
+import ClassroomForm from './ClassroomForm';
 
-describe('<ClassroomCreateForm />', function() {
+describe('<ClassroomForm />', function() {
   let wrapper;
   const onChangeSpy = sinon.spy();
   const onSubmitSpy = sinon.spy();
   before(function() {
     // Using mount. For some reason the simulating form submit wasn't working with shallow render
-    wrapper = mount(<ClassroomCreateForm onChange={onChangeSpy} onSubmit={onSubmitSpy} />);
+    wrapper = mount(<ClassroomForm onChange={onChangeSpy} onSubmit={onSubmitSpy} />);
   });
 
   it('without crashing', function() {});
@@ -32,8 +32,7 @@ describe('<ClassroomCreateForm />', function() {
     const textInput = wrapper.find('#name');
     const value = 'My Classroom';
     const change = { target: { value } };
-    // Why is grommet using oninput and not onchange as the handler?
-    textInput.simulate('input', change);
+    textInput.simulate('change', change);
     expect(onChangeSpy.called).to.be.true();
   });
 
