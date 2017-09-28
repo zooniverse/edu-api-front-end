@@ -16,9 +16,16 @@ const computeRedirectURL = (window) => {
     `${location.protocol}//${location.hostname}:${location.port}`;
 };
 
+function handleError(error) {
+  Actions.auth.setStatus(AUTH_STATUS.ERROR);
+  Actions.auth.setError(error);
+  Actions.notification.setNotification({ status: 'critical' , message: 'Something went wrong.' });
+  console.error(error);
+}
+
 // Synchronous Actions
-const toggleRegistrationForm = (state) => {
-  return { ...state, openRegistrationForm: !state.openRegistrationForm };
+const toggleOauthModal = (state) => {
+  return { ...state, showOauthModal: !state.showOauthModal };
 };
 
 const setLoginUser = (state, user) => {
@@ -46,15 +53,16 @@ Effect('checkLoginUser', () => {
       Actions.auth.setLoginUser(user);
       Actions.auth.setStatus(AUTH_STATUS.SUCCESS);
     }).catch((error) => {
-      Actions.auth.setStatus(AUTH_STATUS.ERROR);
-      Actions.auth.setError(error);
-      console.error(error);
+      handleError(error);
     });
 });
 
 Effect('loginToPanoptes', () => {
   // Returns a login page URL for the user to navigate to.
-  oauth.signIn(computeRedirectURL(window));
+  oauth.signIn(computeRedirectURL(window))
+    .catch((error) => {
+      handleError(error);
+    });
 });
 
 Effect('logoutFromPanoptes', () => {
@@ -63,6 +71,8 @@ Effect('logoutFromPanoptes', () => {
     .then((user) => {
       Actions.auth.setLoginUser(user);
       Actions.auth.setStatus(AUTH_STATUS.SUCCESS);
+    }).catch((error) => {
+      handleError(error);
     });
 });
 
@@ -72,7 +82,7 @@ const auth = State('auth', {
     admin: false,
     error: null,
     initialised: false,
-    openRegistrationForm: false,
+    showOauthModal: false,
     status: AUTH_STATUS.IDLE,
     user: null
   },
@@ -81,7 +91,7 @@ const auth = State('auth', {
   setError,
   setLoginUser,
   setStatus,
-  toggleRegistrationForm
+  toggleOauthModal
 });
 
 export default auth;

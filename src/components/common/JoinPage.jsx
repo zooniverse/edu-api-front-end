@@ -40,7 +40,7 @@ const JoinPage = (props) => {
         className="join-page"
       >
         <Paragraph size="large">You need to sign in to join a classroom.</Paragraph>
-        <LoginButton className="join-page__login-button" login={Actions.loginToPanoptes} plain={false} />
+        <LoginButton className="join-page__login-button" toggleForm={Actions.auth.toggleOauthModal} plain={false} />
       </Box>
     );
   }
@@ -61,7 +61,7 @@ const JoinPage = (props) => {
             Joining classroom...
           </Headline>}
 
-        {(props.programsStatus === PROGRAMS_STATUS.ERROR || props.classroomsStatus == CLASSROOMS_STATUS.ERROR) &&
+        {(props.programsStatus === PROGRAMS_STATUS.ERROR || props.classroomsStatus === CLASSROOMS_STATUS.ERROR) &&
           <Box>
             <Headline align="center" size="medium" strong={true}><Status value="critical" size="large" /> Error</Headline>
             <Paragraph align="center">
@@ -71,8 +71,8 @@ const JoinPage = (props) => {
         }
         {(props.programsStatus === PROGRAMS_STATUS.SUCCESS && props.classroomsStatus === CLASSROOMS_STATUS.SUCCESS) &&
           <Box>
-            <Headline align="center" size="medium" strong={true}><Status value="success" size="large" />Joined classroom</Headline>
-            {props.selectedProgram.metadata.redirect &&
+            <Headline align="center" size="medium" strong={true}><Status value="ok" size="large" /> Joined classroom</Headline>
+            {props.selectedProgram && props.selectedProgram.metadata.redirect &&
               <Paragraph align="center">Redirecting to activity...</Paragraph>}
           </Box>}
       </Box>
