@@ -58,10 +58,11 @@ class SuperDownloadButton extends React.Component {
   }
 
   render() {
+    // Grommet Button determines disabled state based on presence of onClick handler...
     return (
       <Button
         className={this.props.className}
-        onClick={this.download}
+        onClick={this.props.disabled ? null : this.download}
         icon={(this.state.status === STATUS.FETCHING) ? <SpinningIcon size="small" /> : this.props.icon}
         primary={this.props.primary}
       >
@@ -115,23 +116,25 @@ class SuperDownloadButton extends React.Component {
 }
 
 SuperDownloadButton.propTypes = {
-  url: PropTypes.string,
   className: PropTypes.string,
-  text: PropTypes.string,
-  icon: PropTypes.node,
-  filename: PropTypes.string,
   contentType: PropTypes.string,
+  disabled: PropTypes.bool,
+  filename: PropTypes.string,
+  icon: PropTypes.node,
+  primary: PropTypes.bool,
+  text: PropTypes.string,
+  url: PropTypes.string,
   useZooniversalTranslator: PropTypes.bool,
-  primary: PropTypes.bool
 };
 SuperDownloadButton.defaultProps = {
-  url: '',
   className: '',
-  text: ZooTran('Download'),
-  icon: <DownloadIcon size="small"/>,
-  filename: generateFilename(),
   contentType: 'text/csv',
+  disabled: false,
+  filename: generateFilename(),
+  icon: <DownloadIcon size="small"/>,
+  primary: false,
+  text: ZooTran('Download'),
+  url: '',
   useZooniversalTranslator: true,
-  primary: false
 };
 export default SuperDownloadButton;
