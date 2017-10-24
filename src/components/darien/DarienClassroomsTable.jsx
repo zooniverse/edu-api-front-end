@@ -5,14 +5,15 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import Box from 'grommet/components/Box';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
+import AddIcon from 'grommet/components/icons/base/Add';
 import EditIcon from 'grommet/components/icons/base/Edit';
 import CloseIcon from 'grommet/components/icons/base/Close';
 import Anchor from 'grommet/components/Anchor';
 import Button from 'grommet/components/Button';
 import Paragraph from 'grommet/components/Paragraph';
 import Spinning from 'grommet/components/icons/Spinning';
+import Timestamp from 'grommet/components/Timestamp';
 
-import ExportModal from './ExportModal';
 import { config } from '../../lib/config';
 import {
   ASSIGNMENTS_STATUS, ASSIGNMENTS_INITIAL_STATE, ASSIGNMENTS_PROPTYPES
@@ -21,19 +22,16 @@ import {
   CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES
 } from '../../ducks/classrooms';
 
-const AstroClassroomsTable = (props) => {
-  // TODO: Replace classroom.zooniverse_user_group_id with actual serialized user group id when available
-  const assignmentsMetadata = (props.selectedProgram && props.selectedProgram.metadata) ? props.selectedProgram.metadata.assignments : '';
+const DarienClassroomsTable = (props) => {
   return (
     <Box>
-      <ExportModal onClose={props.onExportModalClose} assignment={props.assignmentToExport} />
       {props.children}
       <Table className="manager-table">
         <thead className="manager-table__headers">
           <TableRow>
             <th id="assignments" scope="col" className="manager-table__caption">Your Classrooms</th>
             <th id="completed" scope="col" className="headers__header">Completed</th>
-            <th id="export" scope="col" className="headers__header">Export Data</th>
+            <th id="export" scope="col" className="headers__header">Due Date</th>
             <th id="view-project" scope="col" className="headers__header">View Project</th>
           </TableRow>
         </thead>
@@ -66,7 +64,11 @@ const AstroClassroomsTable = (props) => {
                         </Button>
                       </CopyToClipboard>
                     </span>
-                    <Button className="manager-table__button--delete" type="button" onClick={props.maybeDeleteClassroom.bind(null, classroom.id)}>
+                    <Button
+                      className="manager-table__button--delete"
+                      type="button"
+                      onClick={props.maybeDeleteClassroom.bind(null, classroom.id)}
+                    >
                       <CloseIcon size="small" />
                     </Button>
                   </Box>
@@ -84,46 +86,56 @@ const AstroClassroomsTable = (props) => {
                 props.assignments[classroom.id].length === 0 &&
                 props.assignmentsStatus === ASSIGNMENTS_STATUS.SUCCESS) &&
                 <TableRow className="manager-table__row-data">
-                  <td colSpan="4"><Paragraph>No assignments have been created yet.</Paragraph></td>
+                  <td colSpan="4">
+                    <Box pad="none" margin="none" justify="between" direction="row">
+                      <Paragraph>No assignments have been created yet.</Paragraph>
+                      <Button
+                        className="manager-table__button--create"
+                        onClick={props.toggleAssignmentForm}
+                        type="button"
+                      >
+                        <AddIcon size="small" />
+                      </Button>
+                    </Box>
+                  </td>
                 </TableRow>}
               {(props.assignments[classroom.id] &&
                 props.assignmentsStatus === ASSIGNMENTS_STATUS.SUCCESS) &&
                 props.assignments[classroom.id].map((assignment) => {
-                  const projectUrl = (assignmentsMetadata && assignmentsMetadata[assignment.workflowId]) ?
-                    `${config.zooniverse}/projects/${assignmentsMetadata[assignment.workflowId].slug}/classify?group=${classroom.attributes.zooniverse_group_id}` :
-                    null;
-
                   return (
                     <TableRow className="manager-table__row-data" key={assignment.id}>
-                      <td headers="classroom assignments">{assignment.name}</td>
+                      <td headers="classroom assignments">
+                        {assignment.name}
+                        <Button
+                          className="manager-table__button--edit"
+                          onClick={props.toggleAssignmentForm}
+                          icon={<EditIcon size="small" />}
+                        />
+                      </td>
                       <td headers="classroom completed">
                         {(assignment.metadata && assignment.metadata.classifications_target) ?
                           assignment.metadata.classifications_target : ''}
                       </td>
                       <td headers="classroom export">
-                        <Button
-                          type="button"
-                          className="manager-table__button--as-link"
-                          plain={true}
-                          onClick={props.showExportModal.bind(null, assignment, classroom)}
-                        >
-                          Export Data{' '}
-                          <i className="fa fa-arrow-down" aria-hidden="true" />
-                        </Button>
+                        <Timestamp value={assignment.metadata.duedate} />
                       </td>
                       <td headers="classroom view-project">
-                        {projectUrl &&
-                          <Anchor
-                            className="manager-table__link"
-                            href={projectUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <Anchor
+                          className="manager-table__link"
+                          href={`${config.zooniverse}/projects/wildcam/wildcam-darien/classify?workflow=${assignment.workflow_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Project Page{' '}
+                          <i className="fa fa-mail-forward" aria-hidden="true" />
+                          <Button
+                            className="manager-table__button--delete"
+                            type="button"
+                            onClick={props.maybeDeleteAssignment.bind(null, assignment.id)}
                           >
-                            Project Page{' '}
-                            <i className="fa fa-mail-forward" aria-hidden="true" />
-                          </Anchor>}
-                        {!projectUrl &&
-                          <span>Unavailable</span>}
+                            <CloseIcon size="small" />
+                          </Button>
+                        </Anchor>
                       </td>
                     </TableRow>
                   );
@@ -136,24 +148,24 @@ const AstroClassroomsTable = (props) => {
   );
 };
 
-AstroClassroomsTable.defaultProps = {
-  assignmentToExport: {},
+DarienClassroomsTable.defaultProps = {
   closeConfirmationDialog: () => {},
+  maybeDeleteAssignment: () => {},
   maybeDeleteClassroom: () => {},
   selectClassroom: () => {},
-  showExportModal: () => {},
+  toggleAssignmentForm: () => {},
   ...CLASSROOMS_INITIAL_STATE,
   ...ASSIGNMENTS_INITIAL_STATE
 };
 
-AstroClassroomsTable.propTypes = {
-  assignmentToExport: PropTypes.object,
+DarienClassroomsTable.propTypes = {
   closeConfirmationDialog: PropTypes.func,
+  maybeDeleteAssignment: PropTypes.func,
   maybeDeleteClassroom: PropTypes.func,
   selectClassroom: PropTypes.func,
-  showExportModal: PropTypes.func,
+  toggleAssignmentForm: PropTypes.func,
   ...CLASSROOMS_PROPTYPES,
   ...ASSIGNMENTS_PROPTYPES
 };
 
-export default AstroClassroomsTable;
+export default DarienClassroomsTable;
