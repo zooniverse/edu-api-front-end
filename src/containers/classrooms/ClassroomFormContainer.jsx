@@ -1,11 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 
 import ClassroomForm from '../../components/classrooms/ClassroomForm';
 import {
-  CLASSROOMS_STATUS, CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES
+  CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES
 } from '../../ducks/classrooms';
 import {
   PROGRAMS_INITIAL_STATE, PROGRAMS_PROPTYPES
@@ -19,7 +18,12 @@ export class ClassroomFormContainer extends React.Component {
     this.createClassroom = this.createClassroom.bind(this);
     this.onChange = this.onChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
+    this.closeForm = this.closeForm.bind(this);
     this.updateClassroom = this.updateClassroom.bind(this);
+  }
+
+  componentWillUnmount() {
+    this.resetFormFields();
   }
 
   onChange(event) {
@@ -30,10 +34,24 @@ export class ClassroomFormContainer extends React.Component {
   onSubmit(event) {
     event.preventDefault();
     if (this.props.selectedClassroom) {
-      this.updateClassroom();
+      this.updateClassroom().then(() => {
+        Actions.getClassroom(this.props.selectedClassroom.id);
+        this.closeForm();
+      });
     } else {
-      this.createClassroom();
+      this.createClassroom().then(() => {
+        Actions.getClassroomsAndAssignments(this.props.selectedProgram);
+        this.closeForm();
+      });
     }
+  }
+
+  resetFormFields() {
+    Actions.classrooms.updateFormFields(CLASSROOMS_INITIAL_STATE.formFields);
+  }
+
+  closeForm() {
+    Actions.classrooms.toggleFormVisibility();
   }
 
   createClassroom() {
@@ -49,25 +67,17 @@ export class ClassroomFormContainer extends React.Component {
       }
     };
 
-    Actions.createClassroom(classroomData)
+    return Actions.createClassroom(classroomData)
       .then((classroom) => {
         if (!this.props.selectedProgram.custom) {
           const assignments = this.props.selectedProgram.metadata.assignments;
           if (classroom) this.autoCreateAssignments(assignments, classroom);
         }
-      }).then(() => {
-        Actions.classrooms.toggleFormVisibility();
-        Actions.getClassroomsAndAssignments(this.props.selectedProgram);
       });
   }
 
   updateClassroom() {
-    Actions.updateClassroom({ id: this.props.selectedClassroom.id, payload: this.props.formFields })
-      .then(() => {
-        Actions.classrooms.toggleFormVisibility();
-      }).then(() => {
-        Actions.getClassroom(this.props.selectedClassroom.id);
-      });
+    return Actions.updateClassroom({ id: this.props.selectedClassroom.id, payload: this.props.formFields });
   }
 
   autoCreateAssignments(assignments, classroom) {
@@ -83,7 +93,7 @@ export class ClassroomFormContainer extends React.Component {
           metadata: {
             classification_target: assignments[workflowId].classification_target
           },
-          workflow_id: workflowId,
+          workflow_id: workflowId
         },
         relationships: {
           classroom: {
