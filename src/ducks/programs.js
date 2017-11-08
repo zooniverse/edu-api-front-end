@@ -193,7 +193,16 @@ Effect('getPrograms', () => {
         return response.body.data;
       }
       throw 'ERROR (ducks/programs/getPrograms): Invalid response';
-    }).catch(error => handleError(error));
+    }).catch((error) => {
+      if (error.status !== 404) handleError(error);
+      if (error.status === 404) {
+        // Fallback to showing the mocks
+        // This is temporary until the production API is deployed with programs support.
+        console.log('Programs set in the redux store are the mocks');
+        Actions.programs.setStatus(PROGRAMS_STATUS.SUCCESS);
+        Actions.programs.setPrograms(programsArray);
+      }
+    });
 });
 
 Effect('getProgram', (data) => {
