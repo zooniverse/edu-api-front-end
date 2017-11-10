@@ -29,9 +29,8 @@ const ClassroomsLayout = ({ classroomInstructions, match, toast }) => {
           {toast.message}
         </Toast>}
       <Switch>
-        <Route exact path={`${match.url}`} component={ClassroomsManagerContainer} classroomInstructions={classroomInstructions} />
-        <Route path={`${match.url}/classrooms/:id`} component={ClassroomEditorContainer} />
-        <Redirect from={`${match.url}/classrooms`} to={`${match.url}`} />
+        <Route exact path={`${match.url}/classrooms/:id`} component={ClassroomEditorContainer} />
+        <Route path={`${match.url}`} component={ClassroomsManagerContainer} classroomInstructions={classroomInstructions} />
       </Switch>
     </Box>
   );

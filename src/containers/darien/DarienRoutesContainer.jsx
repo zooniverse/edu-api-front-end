@@ -10,8 +10,8 @@ export default class DarienRoutesContainer extends React.Component {
     return (
       <Switch>
         <Route exact path={`${this.props.match.url}/`} component={DarienHome} />
-        <Route exact path={`${this.props.match.url}/educators`} component={ClassroomsLayout} />
-        <Route exact path={`${this.props.match.url}/students`} component={DarienExplorer} />
+        <Route path={`${this.props.match.url}/educators`} component={ClassroomsLayout} />
+        <Route path={`${this.props.match.url}/students`} component={DarienExplorer} />
       </Switch>
     );
   }
