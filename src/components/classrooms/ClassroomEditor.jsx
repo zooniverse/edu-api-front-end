@@ -28,6 +28,7 @@ import {
 import {
   ASSIGNMENTS_STATUS
 } from '../../ducks/assignments';
+import { i2aAssignmentNames } from '../../ducks/programs';
 
 const ClassroomEditor = (props) => {
   const joinURL = props.selectedClassroom ?
@@ -175,15 +176,26 @@ const ClassroomEditor = (props) => {
             {props.assignmentsStatus === ASSIGNMENTS_STATUS.SUCCESS &&
             props.assignments[props.selectedClassroom.id] &&
             props.assignments[props.selectedClassroom.id].length > 0 &&
-              students.map(student =>
-                (<TableRow className="manager-table__row-data" key={`classroom-student-${student.id}`}>
+              students.map((student) => {
+                const galaxyAssignment = props.assignments[props.selectedClassroom.id].filter(
+                  assignment => assignment.name === i2aAssignmentNames.first);
+                const hubbleAssignment = props.assignments[props.selectedClassroom.id].filter(
+                  assignment => assignment.name === i2aAssignmentNames.second);
+
+                // Why are the ids in the student_user_id property numbers?!?!?!
+                const galaxyStudentData = galaxyAssignment[0].studentAssignmentsData.filter(
+                  data => data.attributes.student_user_id.toString() === student.id);
+                const hubbleStudentData = hubbleAssignment[0].studentAssignmentsData.filter(
+                  data => data.attributes.student_user_id.toString() === student.id);
+
+                return (<TableRow className="manager-table__row-data" key={`classroom-student-${student.id}`}>
                   <td headers="student-name">
                     {(student.zooniverseDisplayName && student.zooniverseDisplayName.length > 0)
                       ? <span>{student.zooniverseDisplayName}</span>
                       : <span className="secondary">{student.zooniverseLogin}</span> }
                   </td>
-                  <td headers="assignment-galaxy">{Math.floor(Math.random() * 100)}%</td>
-                  <td headers="assignment-hubble">{Math.floor(Math.random() * 100)}%</td>
+                  <td headers="assignment-galaxy">{(galaxyStudentData[0].attributes.classifications_count / (+galaxyAssignment[0].metadata.classifications_target)) * 100}%</td>
+                  <td headers="assignment-hubble">{(hubbleStudentData[0].attributes.classifications_count / (+hubbleAssignment[0].metadata.classifications_target)) * 100}%</td>
                   <td headers="student-remove">
                     <Button
                       className="manager-table__button--delete"
@@ -192,8 +204,8 @@ const ClassroomEditor = (props) => {
                       icon={<CloseIcon size="small" />}
                     />
                   </td>
-                </TableRow>)
-              )}
+                </TableRow>);
+              })}
           </tbody>
 
         </Table>
