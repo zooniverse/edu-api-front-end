@@ -2,6 +2,7 @@ import { State, Effect, Actions } from 'jumpstate';
 import PropTypes from 'prop-types';
 import { get, post } from '../lib/edu-api';
 import { i2aAssignmentNames } from './programs';
+import { CLASSROOMS_PROPTYPES } from './classrooms';
 
 // Constants
 const ASSIGNMENTS_STATUS = {
@@ -15,12 +16,39 @@ const ASSIGNMENTS_STATUS = {
 const ASSIGNMENTS_INITIAL_STATE = {
   assignments: {},
   error: null,
+  formFields: {
+    classifications_target: "0",
+    description: '',
+    duedate: '',
+    name: ''
+  },
+  selectedAssignment: null,
+  selectedClassroomToLink: null,
+  showForm: false,
   status: ASSIGNMENTS_STATUS.IDLE
 };
 
+const assignmentPropTypes = {
+  metadata: {
+    classifications_target: PropTypes.string,
+    description: PropTypes.string,
+    duedate: PropTypes.string,
+  },
+  name: PropTypes.string
+};
+
 const ASSIGNMENTS_PROPTYPES = {
-  assignments: PropTypes.shape({}),
+  assignments: PropTypes.shape(PropTypes.shape({ assignmentPropTypes })),
   error: PropTypes.object,
+  formFields: PropTypes.shape({
+    classifications_target: PropTypes.string,
+    description: PropTypes.string,
+    duedate: PropTypes.string,
+    name: PropTypes.string
+  }),
+  selectedAssignment: PropTypes.shape(assignmentPropTypes),
+  selectedClassroomToLink: CLASSROOMS_PROPTYPES.selectedClassroom,
+  showForm: PropTypes.bool,
   status: PropTypes.string
 };
 
@@ -44,6 +72,14 @@ function sortAssignments(assignments) {
 }
 
 // Synchonous actions
+const selectAssignment = (state, selectedAssignment) => {
+  return { ...state, selectedAssignment };
+};
+
+const selectClassroomToLink = (state, classroomId) => {
+  return { ...state, selectedClassroomToLink: classroomId };
+};
+
 const setStatus = (state, status) => {
   return { ...state, status };
 };
@@ -55,6 +91,14 @@ const setAssignments = (state, assignments) => {
 
 const setError = (state, error) => {
   return { ...state, error };
+};
+
+const toggleFormVisibility = (state) => {
+  return { ...state, showForm: !state.showForm };
+};
+
+const updateFormFields = (state, formFields) => {
+  return { ...state, formFields };
 };
 
 // Effects are for async actions and get automatically to the global Actions list
@@ -75,7 +119,7 @@ Effect('getAssignments', (data) => {
       Actions.assignments.setStatus(ASSIGNMENTS_STATUS.SUCCESS);
 
       // If I2A style program, then sort the assignments before setting them to the app state
-      if (!data.selectedProgram.custom) {
+      if (data.selectedProgram && !data.selectedProgram.custom) {
         assignmentsForClassroom[data.classroomId] = sortAssignments(assignments);
       } else {
         assignmentsForClassroom[data.classroomId] = assignments;
@@ -110,7 +154,11 @@ const assignments = State('assignments', {
   // Actions
   setStatus,
   setAssignments,
-  setError
+  setError,
+  selectAssignment,
+  selectClassroomToLink,
+  toggleFormVisibility,
+  updateFormFields
 });
 
 export default assignments;
