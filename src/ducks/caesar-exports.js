@@ -11,6 +11,7 @@ const CAESAR_EXPORTS_STATUS = {
   EXPORTING: 'exporting',
   IDLE: 'idle',
   FETCHING: 'fetching',
+  PENDING: 'pending',
   SUCCESS: 'success',
   ERROR: 'error'
 };
@@ -19,13 +20,15 @@ const CAESAR_EXPORTS_STATUS = {
 const CAESAR_EXPORTS_INITIAL_STATE = {
   caesarExport: {},
   error: null,
+  requestedExports: {},
   showModal: false,
   status: CAESAR_EXPORTS_STATUS.IDLE
 };
 
 const CAESAR_EXPORTS_PROPTYPES = {
-  exports: PropTypes.shape({}),
+  caesarExport: PropTypes.shape({}),
   error: PropTypes.object,
+  requestedExports: PropTypes.object,
   showModal: PropTypes.bool,
   status: PropTypes.string
 };
@@ -34,7 +37,7 @@ const CAESAR_EXPORTS_PROPTYPES = {
 function handleError(error) {
   Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.ERROR);
   Actions.caesarExports.setError(error);
-  Actions.notification.setNotification({ status: 'critical' , message: 'Something went wrong.' });
+  Actions.notification.setNotification({ status: 'critical', message: 'Something went wrong.' });
   console.error(error);
 }
 
@@ -51,31 +54,146 @@ const setError = (state, error) => {
   return { ...state, error };
 };
 
+const setRequestedExports = (state, newRequestedExport) => {
+  const mergedRequestedExports = Object.assign({}, state.requestedExports, newRequestedExport);
+  return { ...state, requestedExports: mergedRequestedExports };
+}
+
 const showModal = (state) => {
   return { ...state, showModal: !state.showModal };
 };
 
 // Effects are for async actions and get automatically to the global Actions list
-Effect('getCaesarExport', (data) => {
+// Requests to caesar should include an Accept: 'application/json' header
+Effect('getCaesarExports', (data) => {
   Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.FETCHING);
-  const requestUrl = `${config.caesar}/workflows/${data.assignment.workflowId}/data_requests`;
+  const requestUrl = `${config.caesar}/workflows/${data.assignment.workflowId}/data_requests/`;
 
   return superagent.get(requestUrl)
+    .set('Accept', 'application/json')
     .set('Content-Type', 'application/json')
     .set('Authorization', apiClient.headers.Authorization)
-    .query({ subgroup: data.classroom.zooniverseGroupId })
+    .query({
+      requested_data: 'reductions',
+      subgroup: data.classroom.zooniverseGroupId
+    })
     .then((response) => {
-      console.log('response', response.status)
-      if (!response) { throw 'ERROR (ducks/caesarExports/getCaesarExport): No response'; };
-      if (response.ok) {
-        console.log('its ok')
+      if (!response) { throw 'ERROR (ducks/caesarExports/getCaesarExport): No response'; }
+      if (response.ok && response.body) {
+
+        return response.body;
+      }
+    }).then((caesarExports) => {
+      // We check if there are any complete exports and if there are, we use the most recent complete export
+      if (caesarExports.length > 0) {
+        const pendingExports = caesarExports.filter((caesarExport) => {
+          return caesarExport.status === 'pending';
+        });
+
+        const completedExports = caesarExports.filter((caesarExport) => {
+          return caesarExport.status === 'complete';
+        });
+
+        if (completedExports.length > 0 && pendingExports.length === 0) {
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+
+          // The API returns the exports in order of most recent
+          Actions.caesarExports.setCaesarExport(completedExports[0]);
+        }
+
+        if (pendingExports.length > 0) {
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.PENDING);
+
+          // Store the most recent pending export
+          const requestedExport = { [data.classroom.id]: pendingExports[0] };
+          Actions.caesarExports.setRequestedExports(requestedExport);
+        }
+
+        if (completedExports.length === 0 || pendingExports.length === 0) {
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+        }
       }
 
-      Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+      return caesarExports;
     }).catch((error) => {
-      if (error.status !== 404) handleError(error)
+      if (error.status !== 404) handleError(error);
       if (error.status === 404) {
         Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+        return error;
+      }
+    });
+});
+
+Effect('getCaesarExport', (data) => {
+  Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.FETCHING);
+  const requestUrl = `${config.caesar}/workflows/${data.assignment.workflowId}/data_requests/${data.id}`;
+
+  return superagent.get(requestUrl)
+    .set('Accept', 'application/json')
+    .set('Content-Type', 'application/json')
+    .set('Authorization', apiClient.headers.Authorization)
+    .then((response) => {
+      if (!response) { throw 'ERROR (ducks/caesarExports/getCaesarExport): No response'; }
+      if (response.ok && response.body) {
+        const responseData = response.body;
+        if (responseData.status === 'complete') {
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+          Actions.caesarExports.setCaesarExport(responseData);
+          Actions.caesarExports.setRequestedExports(CAESAR_EXPORTS_INITIAL_STATE.requestedExport);
+
+          return response.body;
+        }
+
+        if (responseData.status === 'pending') {
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.PENDING);
+          const requestedExport = { [data.classroom.id]: responseData };
+          Actions.caesarExports.setRequestedExports(requestedExport);
+        }
+
+        if (responseData.status === 'failed') {
+          Actions.caesarExports.setRequestedExports(CAESAR_EXPORTS_INITIAL_STATE.requestedExport);
+          Actions.caesarExports.setCaesarExport(CAESAR_EXPORTS_INITIAL_STATE.caesarExport);
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.ERROR);
+          Actions.caesarExports.setError({ status: 'failed' });
+          Actions.notification.setNotification({ status: 'critical', message: 'Something went wrong.' });
+        }
+      }
+    }).catch((error) => {
+      if (error.status !== 404) handleError(error);
+      if (error.status === 404) {
+        Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+        return error;
+      }
+    });
+});
+
+Effect('createCaesarExport', (data) => {
+  Actions.caesarExports.setCaesarExport(CAESAR_EXPORTS_INITIAL_STATE.caesarExport);
+  const requestUrl = `${config.caesar}/workflows/${data.assignment.workflowId}/data_requests/`;
+
+  return superagent.post(requestUrl)
+    .set('Accept', 'application/json')
+    .set('Content-Type', 'application/json')
+    .set('Authorization', apiClient.headers.Authorization)
+    .send({
+      requested_data: 'reductions',
+      subgroup: data.classroom.zooniverseGroupId
+    })
+    .then((response) => {
+      if (!response) { throw 'ERROR (ducks/caesarExports/getCaesarExport): No response'; }
+      if (response.ok && response.body) {
+        const responseData = response.body;
+        if (responseData.status === 'pending') {
+          const requestedExport = { [data.classroom.id]: responseData };
+          Actions.caesarExports.setRequestedExports(requestedExport);
+          Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.PENDING);
+        }
+      }
+    }).catch((error) => {
+      if (error.status !== 404) handleError(error);
+      if (error.status === 404) {
+        Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
+        return error;
       }
     });
 });
@@ -106,10 +224,10 @@ Effect('exportToGoogleDrive', (csv) => {
     }).then((response) => {
       if (response && response.body && response.status === 200) {
         Actions.caesarExports.setStatus(CAESAR_EXPORTS_STATUS.SUCCESS);
-        Actions.classrooms.setToastState({ status: 'ok', message: 'Sent CSV to your Google Drive' })
+        Actions.classrooms.setToastState({ status: 'ok', message: 'Sent CSV to your Google Drive' });
         Actions.caesarExports.showModal();
       }
-    }).catch((error) => { handleError(error); })
+    }).catch((error) => { handleError(error); });
 });
 
 const caesarExports = State('caesarExports', {
@@ -119,6 +237,7 @@ const caesarExports = State('caesarExports', {
   setStatus,
   setCaesarExport,
   setError,
+  setRequestedExports,
   showModal
 });
 

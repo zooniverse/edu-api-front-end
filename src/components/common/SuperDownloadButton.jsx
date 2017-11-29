@@ -26,6 +26,7 @@ import PropTypes from 'prop-types';
 
 import { saveAs } from 'browser-filesaver';
 import superagent from 'superagent';
+import Papa from 'papaparse';
 
 import Button from 'grommet/components/Button';
 import Toast from 'grommet/components/Toast';
@@ -48,6 +49,7 @@ class SuperDownloadButton extends React.Component {
   constructor(props) {
     super(props);
     this.download = this.download.bind(this);
+    this.handleClick = this.handleClick.bind(this);
 
     this.altForm = null;
     this.altFormData = null;
@@ -55,6 +57,14 @@ class SuperDownloadButton extends React.Component {
     this.state = {  // Keep the state simple and local; no need for Redux connections.
       status: STATUS.IDLE
     };
+  }
+
+  handleClick() {
+    if (this.props.transformData && typeof this.props.transformData === 'function') {
+      return Papa.parse(this.props.url, { complete: this.props.transformData, download: true });
+    }
+
+    return this.download();
   }
 
   download() {
@@ -98,7 +108,7 @@ class SuperDownloadButton extends React.Component {
     return (
       <Button
         className={this.props.className ? this.props.className : null}
-        onClick={this.props.disabled ? null : this.download}
+        onClick={this.props.disabled ? null : this.handleClick}
         icon={(this.state.status === STATUS.FETCHING) ? <SpinningIcon size="small" /> : this.props.icon}
         primary={this.props.primary}
         label={this.props.text}
@@ -135,6 +145,10 @@ SuperDownloadButton.propTypes = {
   icon: PropTypes.node,
   primary: PropTypes.bool,
   text: PropTypes.string,
+  transformData: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.object
+  ]),
   url: PropTypes.string,
   useZooniversalTranslator: PropTypes.bool
 };
@@ -147,6 +161,7 @@ SuperDownloadButton.defaultProps = {
   icon: <DownloadIcon size="small" />,
   primary: false,
   text: ZooTran('Download'),
+  transformData: null,
   url: '',
   useZooniversalTranslator: true
 };

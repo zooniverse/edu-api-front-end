@@ -33,7 +33,12 @@ function AstroClassroomsTable(props) {
   const assignmentsMetadata = (props.selectedProgram && props.selectedProgram.metadata) ? props.selectedProgram.metadata.assignments : '';
   return (
     <Box>
-      <ExportModal onClose={props.onExportModalClose} assignment={props.assignmentToExport} />
+      <ExportModal
+        assignment={props.assignmentToExport}
+        transformData={props.transformData}
+        onClose={props.onExportModalClose}
+        requestNewExport={props.requestNewExport}
+      />
       {props.children}
       <Table className="manager-table">
         <thead className="manager-table__headers">
@@ -150,6 +155,7 @@ AstroClassroomsTable.defaultProps = {
   maybeDeleteClassroom: () => {},
   selectClassroom: () => {},
   showExportModal: () => {},
+  transformData: () => {},
   ...CLASSROOMS_INITIAL_STATE,
   ...ASSIGNMENTS_INITIAL_STATE
 };
@@ -160,6 +166,7 @@ AstroClassroomsTable.propTypes = {
   maybeDeleteClassroom: PropTypes.func,
   selectClassroom: PropTypes.func,
   showExportModal: PropTypes.func,
+  transformData: PropTypes.func,
   ...CLASSROOMS_PROPTYPES,
   ...ASSIGNMENTS_PROPTYPES
 };

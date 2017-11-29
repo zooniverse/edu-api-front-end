@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Actions } from 'jumpstate';
 
 import Box from 'grommet/components/Box';
 import Heading from 'grommet/components/Heading';
@@ -9,8 +8,8 @@ import Spinning from 'grommet/components/icons/Spinning';
 import Status from 'grommet/components/icons/Status';
 import Timestamp from 'grommet/components/Timestamp';
 import Paragraph from 'grommet/components/Paragraph';
-import Button from 'grommet/components/Button';
 import Layer from 'grommet/components/Layer';
+import Button from 'grommet/components/Button';
 
 import SuperDownloadButton from '../common/SuperDownloadButton';
 import GoogleDriveExportButton from './GoogleDriveExportButton';
@@ -19,30 +18,42 @@ import {
 } from '../../ducks/caesar-exports';
 
 
-const ExportModal = ({ caesarExport, caesarExportStatus, onClose, showModal }) => {
-  // TODO replace Date.now() with timestamp in export response
+function ExportModal({ caesarExport, caesarExports, caesarExportStatus, onClose, requestedExports, requestNewExport, showModal, transformData }) {
   // TODO add url prop to SuperDownloadButton
   // TODO disable Export to Google Sheets button like the download button.
   // It's not disabled for testing purposes at the moment
   const noExport = caesarExport === CAESAR_EXPORTS_INITIAL_STATE.caesarExport &&
+    caesarExports === CAESAR_EXPORTS_INITIAL_STATE.caesarExports &&
     caesarExportStatus === CAESAR_EXPORTS_STATUS.SUCCESS;
-
-  const disableButton = noExport || (caesarExportStatus === CAESAR_EXPORTS_STATUS.FETCHING && caesarExport === CAESAR_EXPORTS_INITIAL_STATE.caesarExport);
+  const fetching = caesarExportStatus === CAESAR_EXPORTS_STATUS.FETCHING &&
+    (caesarExport === CAESAR_EXPORTS_INITIAL_STATE.caesarExport ||
+    caesarExports === CAESAR_EXPORTS_INITIAL_STATE.caesarExports);
+  const pending = Object.keys(requestedExports).length > 0 && caesarExportStatus === CAESAR_EXPORTS_STATUS.PENDING;
+  const disableButton = noExport || fetching || pending;
+  const success = Object.keys(caesarExport).length > 0 && caesarExportStatus === CAESAR_EXPORTS_STATUS.SUCCESS;
 
   if (showModal) {
     return (
       <Layer className="export-modal" closer={true} onClose={onClose}>
         <Box pad="medium" justify="between">
           <Heading tag="h2">Data Export</Heading>
-          {caesarExport === CAESAR_EXPORTS_INITIAL_STATE.caesarExport &&
-            caesarExportStatus === CAESAR_EXPORTS_STATUS.FETCHING &&
+          {fetching &&
             <Paragraph align="center"><Spinning /></Paragraph>}
-          {Object.keys(caesarExport) > 0 &&
-            caesarExportStatus === CAESAR_EXPORTS_STATUS.SUCCESS &&
+          {success &&
+            <Box>
+              <Paragraph>
+                <Status value="ok" />{' '}
+                Export available since{' '}
+                <Timestamp value={new Date(caesarExport.updated_at)} />
+              </Paragraph>
+              <Paragraph>
+                <Button secondary={true} fill={false} onClick={requestNewExport} label="Request new export" />
+              </Paragraph>
+            </Box>}
+          {pending &&
             <Paragraph>
-              <Status value="ok" />{' '}
-              Export available since{' '}
-              <TimeStamp value={Date.now()} />
+              <Status value="warning" />{' '}
+              Export request is processing. Please check again later.
             </Paragraph>}
           {noExport &&
             <Paragraph>
@@ -51,10 +62,15 @@ const ExportModal = ({ caesarExport, caesarExportStatus, onClose, showModal }) =
             </Paragraph>}
           {caesarExport === CAESAR_EXPORTS_INITIAL_STATE.caesarExport &&
             caesarExportStatus === CAESAR_EXPORTS_STATUS.ERROR &&
-            <Paragraph>
-              <Status value="critical" />{' '}
-              Something went wrong
-            </Paragraph>}
+            <Box>
+              <Paragraph>
+                <Status value="critical" />{' '}
+                Something went wrong. Either the export processing failed or the server is not available. Please try again.
+              </Paragraph>
+              <Paragraph>
+                <Button secondary={true} fill={false} onClick={requestNewExport} label="Request new export" />
+              </Paragraph>
+            </Box>}
           <Box direction="row">
             <SuperDownloadButton
               className="export-modal__button"
@@ -62,8 +78,13 @@ const ExportModal = ({ caesarExport, caesarExportStatus, onClose, showModal }) =
               fileNameBase="astro101-"
               primary={true}
               text="Download CSV"
+              transformData={transformData}
+              url={caesarExport.url}
             />
-            <GoogleDriveExportButton className="export-modal__button" />
+            <GoogleDriveExportButton
+              className="export-modal__button"
+              disabled={disableButton}
+            />
           </Box>
         </Box>
       </Layer>
@@ -87,6 +108,7 @@ function mapStateToProps(state) {
   return {
     caesarExport: state.caesarExports.caesarExport,
     caesarExportStatus: state.caesarExports.status,
+    requestedExports: state.caesarExports.requestedExports,
     showModal: state.caesarExports.showModal
   };
 }
