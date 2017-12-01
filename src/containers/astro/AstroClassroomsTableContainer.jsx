@@ -1,10 +1,8 @@
 import React from 'react';
 import { Actions } from 'jumpstate';
 import { connect } from 'react-redux';
-import { saveAs } from 'browser-filesaver';
 
 import AstroClassroomsTable from '../../components/astro/AstroClassroomsTable';
-import { blobbifyData, generateFilename } from '../../lib/file-download-helpers';
 
 import {
   CAESAR_EXPORTS_INITIAL_STATE, CAESAR_EXPORTS_PROPTYPES
@@ -24,6 +22,8 @@ class AstroClassroomsTableContainer extends React.Component {
 
     this.handleRequestForNewExport = this.handleRequestForNewExport.bind(this);
     this.onExportModalClose = this.onExportModalClose.bind(this);
+    this.handleRequestForNewExport = this.handleRequestForNewExport.bind(this);
+    this.onExportModalClose = this.onExportModalClose.bind(this);
     this.showExportModal = this.showExportModal.bind(this);
     this.transformData = this.transformData.bind(this);
   }
@@ -32,6 +32,8 @@ class AstroClassroomsTableContainer extends React.Component {
     this.setState({ toExport: { assignment: {}, classroom: {} } });
 
     Actions.caesarExports.setCaesarExport(CAESAR_EXPORTS_INITIAL_STATE.caesarExport);
+    Actions.caesarExports.setGoogleFileUrl(CAESAR_EXPORTS_INITIAL_STATE.googleFileUrl);
+    Actions.caesarExports.setStatus(CAESAR_EXPORTS_INITIAL_STATE.status);
     Actions.caesarExports.showModal();
   }
 
@@ -44,9 +46,7 @@ class AstroClassroomsTableContainer extends React.Component {
         this.props.requestedExports[classroom.id] &&
         this.props.requestedExports[classroom.id].workflow_id.toString() === assignment.workflowId) {
       this.checkPendingExport(assignment, classroom, this.props.requestedExports[classroom.id].id);
-    }
-
-    if (Object.keys(this.props.requestedExports).length === 0) {
+    } else {
       this.checkExportExistence(assignment, classroom)
         .then((caesarExports) => {
           if (caesarExports && caesarExports.length === 0) {
@@ -77,13 +77,9 @@ class AstroClassroomsTableContainer extends React.Component {
 
   transformData(csvData) {
     if (this.state.toExport.assignment.name === i2aAssignmentNames.galaxy) {
-      Promise.resolve(this.transformGalaxyDataCsv(csvData));
+      return Promise.resolve(this.transformGalaxyDataCsv(csvData));
     } else if (this.state.toExport.assignment.name === i2aAssignmentNames.hubble) {
-      Promise.resolve(this.transformHubbleDataCsv(csvData))
-        .then((transformedData) => {
-          const filename = generateFilename('astro101-');
-          saveAs(blobbifyData(transformedData, 'text/csv'), filename);
-        });
+      return Promise.resolve(this.transformHubbleDataCsv(csvData));
     }
 
     return null;
@@ -137,7 +133,7 @@ class AstroClassroomsTableContainer extends React.Component {
     return (
       <AstroClassroomsTable
         {...this.props}
-        assignmentToExport={this.state.toExport.assignment}
+        toExport={this.state.toExport}
         onExportModalClose={this.onExportModalClose}
         requestNewExport={this.handleRequestForNewExport}
         showExportModal={this.showExportModal}
