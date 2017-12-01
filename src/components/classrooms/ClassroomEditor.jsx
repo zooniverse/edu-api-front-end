@@ -181,6 +181,16 @@ const ClassroomEditor = (props) => {
             {props.assignmentsStatus === ASSIGNMENTS_STATUS.SUCCESS &&
             props.assignments[props.selectedClassroom.id] &&
             props.assignments[props.selectedClassroom.id].length > 0 &&
+            students.length === 0 && (
+              <TableRow className="manager-table__row-data">
+                <td colSpan="4"><Paragraph>No students have joined yet.</Paragraph></td>
+              </TableRow>
+            )}
+
+            {props.assignmentsStatus === ASSIGNMENTS_STATUS.SUCCESS &&
+            props.assignments[props.selectedClassroom.id] &&
+            props.assignments[props.selectedClassroom.id].length > 0 &&
+            students.length > 0 &&
               students.map((student) => {
                 const galaxyAssignment = props.assignments[props.selectedClassroom.id].filter(
                   assignment => assignment.name === i2aAssignmentNames.galaxy);
