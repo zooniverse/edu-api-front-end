@@ -81,9 +81,9 @@ export class ClassroomEditorContainer extends React.Component {
     if (!this.props.selectedClassroom && !this.props.selectedClassroom.students) return null;
     const classroomName = this.props.selectedClassroom.name;
     const galaxyAssignment = this.props.assignments[this.props.selectedClassroom.id].filter(
-      assignment => assignment.name === i2aAssignmentNames.first);
+      assignment => assignment.name === i2aAssignmentNames.galaxy);
     const hubbleAssignment = this.props.assignments[this.props.selectedClassroom.id].filter(
-      assignment => assignment.name === i2aAssignmentNames.second);
+      assignment => assignment.name === i2aAssignmentNames.hubble);
     const galaxyClassificationTarget = galaxyAssignment[0].metadata.classifications_target;
     const hubbleClassificationTarget = hubbleAssignment[0].metadata.classifications_target;
 
@@ -103,9 +103,9 @@ export class ClassroomEditorContainer extends React.Component {
       const studentHubbleCount = hubbleStudentData[0].attributes.classifications_count;
       const galaxyCountStat = `${studentGalaxyCount}/${galaxyClassificationTarget}`;
       const hubbleCountStat = `${studentHubbleCount}/${hubbleClassificationTarget}`;
-      const galaxyPercentageStat = Math.round((studentGalaxyCount / (+galaxyClassificationTarget)) * 100);
-      const hubblePercentageStat = Math.round((studentHubbleCount / (+hubbleClassificationTarget)) * 100);
-      const row = `"${classroomName}","${studentName}",${galaxyCountStat},${hubbleCountStat},${galaxyPercentageStat},${hubblePercentageStat}\n`;
+      const galaxyPercentageStat = ((studentGalaxyCount / (+galaxyClassificationTarget)).toFixed(2) * 100);
+      const hubblePercentageStat = ((studentHubbleCount / (+hubbleClassificationTarget)).toFixed(2) * 100);
+      const row = `"${classroomName}","${studentName}",${galaxyCountStat},${hubbleCountStat},${galaxyPercentageStat <= 100 ? galaxyPercentageStat : 100},${hubblePercentageStat <= 100 ? hubblePercentageStat : 100}\n`;
       csvData += row;
     });
     saveAs(blobbifyData(csvData, 'text/csv'), generateFilename('astro101-', '.csv'));

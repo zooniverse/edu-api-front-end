@@ -21,12 +21,24 @@ import {
   CLASSROOMS_INITIAL_STATE, CLASSROOMS_PROPTYPES
 } from '../../ducks/classrooms';
 
-function calculateCompleteness(assignment, classroom) {
+function calculateCompleteness(assignment) {
   const classificationsTarget = +assignment.metadata.classifications_target;
   const numberOfStudents = assignment.studentAssignments.length;
-  const numberOfCompletedClassifications = classroom.classificationsCount;
   if (numberOfStudents === 0) return 0;
-  return (Math.round(numberOfCompletedClassifications / (classificationsTarget * numberOfStudents)) * 100);
+
+  let numberOfCompletedClassificationsPerAssignment = 0;
+  assignment.studentAssignmentsData.forEach((studentAssignment) => {
+    // Just return the classificationsTarget count if the student did more than assigned
+    if (studentAssignment.attributes.classifications_count >= classificationsTarget) {
+      numberOfCompletedClassificationsPerAssignment += classificationsTarget;
+    } else {
+      numberOfCompletedClassificationsPerAssignment += studentAssignment.attributes.classifications_count;
+    }
+  });
+  const totalClassificationsTarget = classificationsTarget * numberOfStudents;
+  const completenessPercentage = ((numberOfCompletedClassificationsPerAssignment / totalClassificationsTarget).toFixed(2) * 100);
+  // Just return 100 if the calculation is over 100.
+  return completenessPercentage <= 100 ? completenessPercentage : 100;
 }
 
 function AstroClassroomsTable(props) {
@@ -104,7 +116,7 @@ function AstroClassroomsTable(props) {
                   const projectUrl = (assignmentsMetadata && assignmentsMetadata[assignment.workflowId]) ?
                     `${config.zooniverse}/projects/${assignmentsMetadata[assignment.workflowId].slug}/classify?group=${classroom.attributes.zooniverse_group_id}` :
                     null;
-                  const calculatedCompleteness = calculateCompleteness(assignment, classroom);
+                  const calculatedCompleteness = calculateCompleteness(assignment);
                   return (
                     <TableRow className="manager-table__row-data" key={assignment.id}>
                       <td headers="classroom assignments">{assignment.name}</td>
@@ -118,7 +130,10 @@ function AstroClassroomsTable(props) {
                           type="button"
                           className="manager-table__button--as-link"
                           plain={true}
-                          onClick={props.showExportModal.bind(null, assignment, classroom)}
+                          onClick={calculatedCompleteness !== 0 ?
+                            props.showExportModal.bind(null, assignment, classroom) :
+                            null
+                          }
                         >
                           Export Data{' '}
                           <i className="fa fa-arrow-down" aria-hidden="true" />
