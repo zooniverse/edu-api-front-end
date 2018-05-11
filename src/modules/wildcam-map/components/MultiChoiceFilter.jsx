@@ -9,7 +9,7 @@ import Button from 'grommet/components/Button';
 import CheckboxIcon from 'grommet/components/icons/base/Checkbox';
 import CheckboxSelectedIcon from 'grommet/components/icons/base/CheckboxSelected';
 
-import { ZooTran } from '../../lib/zooniversal-translator.js';
+import { ZooTran } from '../../../lib/zooniversal-translator.js';
 
 const MultiChoicePanel = (props) => {
   return (
@@ -30,7 +30,7 @@ const MultiChoicePanel = (props) => {
               <Button
                 key={`map-control-filter-item-${props.filterKey}-${item.value}`}
                 onClick={()=>{
-                  Actions.mapexplorer.removeFilterSelectionItem({ key: props.filterKey, value: item.value });
+                  Actions.wildcamMap.removeFilterSelectionItem({ key: props.filterKey, value: item.value });
                 }}
                 icon={<CheckboxSelectedIcon size="small" />}
               >
@@ -44,7 +44,7 @@ const MultiChoicePanel = (props) => {
               <Button
                 key={`map-control-filter-item-${props.filterKey}-${item.value}`}
                 onClick={()=>{
-                  Actions.mapexplorer.addFilterSelectionItem({ key: props.filterKey, value: item.value });
+                  Actions.wildcamMap.addFilterSelectionItem({ key: props.filterKey, value: item.value });
                 }}
                 icon={<CheckboxIcon size="small" />}
               >

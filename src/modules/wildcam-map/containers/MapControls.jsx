@@ -1,15 +1,15 @@
 /*
-Map Explorer - Controls
-=======================
+WildCam Map - Controls
+----------------------
 
-Part of the Map Explorer feature.
+Part of the WildCam Map feature.
 
 This component has two functions:
-* allow users to select the filters (e.g. by species) shown on the map.
-* allow users to download data from the external database, based on the selected
+- allow users to select the filters (e.g. by species) shown on the map.
+- allow users to download data from the external database, based on the selected
   filters.
 
-********************************************************************************
+--------------------------------------------------------------------------------
  */
 
 import React from 'react';
@@ -19,19 +19,19 @@ import { Actions } from 'jumpstate';
 
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
-import MultiChoiceFilter from '../../components/maps/MultiChoiceFilter';
-import SuperDownloadButton from '../../components/common/SuperDownloadButton';
+import MultiChoiceFilter from '../components/MultiChoiceFilter';
+import SuperDownloadButton from '../../../components/common/SuperDownloadButton';
 
 import Accordion from 'grommet/components/Accordion';
 import AccordionPanel from 'grommet/components/AccordionPanel';
 
-import { constructWhereClause } from '../../lib/mapexplorer-helpers';
-import { ZooTran, ZooTranGetLanguage } from '../../lib/zooniversal-translator.js';
+import { constructWhereClause } from '../lib/wildcam-map-helpers.js';
+import { ZooTran, ZooTranGetLanguage } from '../../../lib/zooniversal-translator.js';
 
 import {
-  MAPEXPLORER_INITIAL_STATE, MAPEXPLORER_PROPTYPES,
-  MAPEXPLORER_MARKERS_STATUS,
-} from '../../ducks/mapexplorer';
+  WILDCAMMAP_INITIAL_STATE, WILDCAMMAP_PROPTYPES,
+  WILDCAMMAP_MARKERS_STATUS, WILDCAMMAP_MAP_STATE,
+} from '../ducks/index.js';
 
 class MapControls extends React.Component {
   constructor(props) {
@@ -53,11 +53,11 @@ class MapControls extends React.Component {
 
     const hasAnySelections = this.props.filters && Object.keys(this.props.filters).length > 0;
     let statusMessage = '...';
-    if (this.props.markersStatus === MAPEXPLORER_MARKERS_STATUS.FETCHING) {
+    if (this.props.markersStatus === WILDCAMMAP_MARKERS_STATUS.FETCHING) {
       statusMessage = ZooTran('Loading...');
-    } else if (this.props.markersStatus === MAPEXPLORER_MARKERS_STATUS.ERROR) {
+    } else if (this.props.markersStatus === WILDCAMMAP_MARKERS_STATUS.ERROR) {
       statusMessage = ZooTran('ERROR');
-    } else if (this.props.markersStatus === MAPEXPLORER_MARKERS_STATUS.SUCCESS) {
+    } else if (this.props.markersStatus === WILDCAMMAP_MARKERS_STATUS.SUCCESS) {
       statusMessage = `${this.props.markersDataCount} ${ZooTran('result(s)')}`;
     }
 
@@ -126,7 +126,7 @@ class MapControls extends React.Component {
     //Prevent infinite loops; only update when the selected filters are changed.
     let areFiltersDifferent = JSON.stringify(this.props.filters) !== JSON.stringify(props.filters);
     if (areFiltersDifferent) {
-      Actions.getMapMarkers({
+      Actions.wcm_getMapMarkers({
         mapConfig: props.mapConfig,
         filters: props.filters,
       });
@@ -137,17 +137,15 @@ class MapControls extends React.Component {
 MapControls.propTypes = {
   mapConfig: PropTypes.object,
   setLanguage: PropTypes.func,
-  ...MAPEXPLORER_PROPTYPES,
+  ...WILDCAMMAP_PROPTYPES,
 };
 MapControls.defaultProps = {
   mapConfig: null,
   setLanguage: () => {},
-  ...MAPEXPLORER_INITIAL_STATE,
+  ...WILDCAMMAP_INITIAL_STATE,
 };
 const mapStateToProps = (state) => ({
-  filters: state.mapexplorer.filters,
-  markersStatus: state.mapexplorer.markersStatus,
-  markersDataCount: state.mapexplorer.markersDataCount,
+  ...WILDCAMMAP_MAP_STATE(state),
 });
 
 export default connect(mapStateToProps)(MapControls);

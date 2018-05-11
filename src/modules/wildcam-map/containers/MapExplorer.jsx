@@ -1,26 +1,26 @@
 /*
-Map Explorer
-============
+WildCam Map
+-----------
 
-The primary component for the Map Explorer feature.
+The primary component for the WildCam Map feature.
 
 This feature is a 'data visualisation tool' allows Teachers and Students to view
 aggregated data from a Zooniverse project on a visual, geographical map.
 
 Requires:
-* a project-specific `mapConfig` object.
-* (External dependency) an external database containing the map data for said
+- a project-specific `mapConfig` object.
+- (External dependency) an external database containing the map data for said
   project, which can be queried with SQL SELECT commands. For example, Carto.
   
 Notable components:
-* MapVisuals: handles the visual display of the map.
-* MapControls: allows users to select the kind of data they want.
-* ducks/mapexplorer: stores the map explorer data (e.g. view state) AND connects
-    to the external database.
-* lib/mapexplorer-helper: handles general utility features, such as constructing
-    SQL "where" clauses from selected filters.
+- MapVisuals: handles the visual display of the map.
+- MapControls: allows users to select the kind of data they want.
+- ducks/index.js: stores the map explorer data (e.g. view state) AND
+    connects to the external database.
+- lib/wildcam-map-helpers: handles general utility features, such as
+    constructing SQL "where" clauses from selected filters.
 
-********************************************************************************
+--------------------------------------------------------------------------------
  */
 
 import React from 'react';
@@ -31,15 +31,15 @@ import { Actions } from 'jumpstate';  //TEST
 import Box from 'grommet/components/Box';
 import MapVisuals from './MapVisuals';
 import MapControls from './MapControls';
-import CameraViewer from '../../components/maps/CameraViewer';
+import CameraViewer from '../components/CameraViewer';
 
 import {
   ZooTran, ZooTranSetLanguage,
-} from '../../lib/zooniversal-translator.js';
+} from '../../../lib/zooniversal-translator.js';
 
 import {
-  MAPEXPLORER_INITIAL_STATE, MAPEXPLORER_PROPTYPES,
-} from '../../ducks/mapexplorer';
+  WILDCAMMAP_INITIAL_STATE, WILDCAMMAP_PROPTYPES, WILDCAMMAP_MAP_STATE,
+} from '../ducks/index.js';
 
 class MapExplorer extends React.Component {
   constructor(props) {
@@ -52,7 +52,7 @@ class MapExplorer extends React.Component {
   
   render() {
     return (
-      <Box className="map-explorer">
+      <Box className="wildcam-map">
         <MapVisuals
           mapConfig={this.props.mapConfig}
         />
@@ -84,18 +84,14 @@ class MapExplorer extends React.Component {
 
 MapExplorer.propTypes = {
   mapConfig: PropTypes.object,
-  ...MAPEXPLORER_PROPTYPES,
+  ...WILDCAMMAP_PROPTYPES,
 };
 MapExplorer.defaultProps = {
   mapConfig: null,
-  ...MAPEXPLORER_INITIAL_STATE,
+  ...WILDCAMMAP_INITIAL_STATE,
 };
 const mapStateToProps = (state) => ({
-  activeCameraId: state.mapexplorer.activeCameraId,
-  activeCameraMetadata: state.mapexplorer.activeCameraMetadata,
-  activeCameraMetadataStatus: state.mapexplorer.activeCameraMetadataStatus,
-  activeCameraData: state.mapexplorer.activeCameraData,
-  activeCameraDataStatus: state.mapexplorer.activeCameraDataStatus,
+  ...WILDCAMMAP_MAP_STATE(state),
 });
 
 export default connect(mapStateToProps)(MapExplorer);

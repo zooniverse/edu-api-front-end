@@ -1,14 +1,14 @@
 /*
-Map Explorer - Visuals
-======================
+WildCam Map - Visuals
+---------------------
 
-Part of the Map Explorer feature.
+Part of the WildCam Map feature.
 
 This feature has one function:
-* visually display the aggregated data from a specific Zooniverse project on a
+- visually display the aggregated data from a specific Zooniverse project on a
   geographical map.
 
-********************************************************************************
+--------------------------------------------------------------------------------
  */
 
 import React from 'react';
@@ -17,16 +17,16 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 
-import SimpleMapLegend from '../../components/maps/SimpleMapLegend';
+import SimpleMapLegend from '../components/SimpleMapLegend';
 import Box from 'grommet/components/Box';
 
 import L from 'leaflet';
 import superagent from 'superagent';
-import { ZooTran } from '../../lib/zooniversal-translator.js';
+import { ZooTran } from '../../../lib/zooniversal-translator.js';
 
 import {
-  MAPEXPLORER_INITIAL_STATE, MAPEXPLORER_PROPTYPES
-} from '../../ducks/mapexplorer';
+  WILDCAMMAP_INITIAL_STATE, WILDCAMMAP_PROPTYPES, WILDCAMMAP_MAP_STATE
+} from '../ducks/index.js';
 
 //Arbitrary values for a default map marker.
 //TODO / QUESTION: make this customisable?
@@ -46,7 +46,7 @@ class MapVisuals extends React.Component {
   constructor(props) {
     super(props);
     
-    this.initMapExplorer = this.initMapExplorer.bind(this);
+    this.initMap = this.initMap.bind(this);
     this.renderMarker = this.renderMarker.bind(this);
     this.examineMarker = this.examineMarker.bind(this);
     this.updateDataLayer = this.updateDataLayer.bind(this);
@@ -58,7 +58,7 @@ class MapVisuals extends React.Component {
   
   //----------------------------------------------------------------
 
-  initMapExplorer() {
+  initMap() {
     if (this.map) return;  //Don't initialise the map if a map already exists.
     if (!this.props.mapConfig) return;
     
@@ -86,7 +86,7 @@ class MapVisuals extends React.Component {
     this.dataLayer = L.geoJson(null, {
       pointToLayer: this.renderMarker
     }).addTo(this.map);
-    Actions.getMapMarkers({
+    Actions.wcm_getMapMarkers({
       mapConfig: this.props.mapConfig,
       filters: this.props.filters,
     });
@@ -189,7 +189,7 @@ class MapVisuals extends React.Component {
     if (!e || !e.target || !e.target.feature || !e.target.feature.properties) return;
     
     const cameraId = e.target.feature.properties.id;
-    Actions.getActiveCamera({
+    Actions.wcm_getActiveCamera({
       mapConfig: this.props.mapConfig,
       filters: this.props.filters,
       cameraId,
@@ -205,7 +205,7 @@ class MapVisuals extends React.Component {
   }
   
   componentDidMount() {
-    this.initMapExplorer();
+    this.initMap();
   }
   
   componentWillReceiveProps(nextProps) {
@@ -217,17 +217,14 @@ class MapVisuals extends React.Component {
 
 MapVisuals.propTypes = {
   mapConfig: PropTypes.object,
-  ...MAPEXPLORER_PROPTYPES,
+  ...WILDCAMMAP_PROPTYPES,
 };
 MapVisuals.defaultProps = {
   mapConfig: null,
-  ...MAPEXPLORER_INITIAL_STATE,
+  ...WILDCAMMAP_INITIAL_STATE,
 };
 const mapStateToProps = (state) => ({
-  markersData: state.mapexplorer.markersData,
-  markersStatus: state.mapexplorer.markersStatus,
-  markersError: state.mapexplorer.markersError,
-  filters: state.mapexplorer.filters,
+  ...WILDCAMMAP_MAP_STATE(state),
 });
 
 export default connect(mapStateToProps)(MapVisuals);

@@ -3,7 +3,7 @@ Zooniversal Translator
 ======================
 
 The Zooniversal Translator is a simple, brute-force approach to achieving
-translations on the Map Explorer, very specifically: WildCam Darien needs
+translations on the WildCam Map, very specifically: WildCam Darien needs
 English and Spanish text for their project, and it needs it by launch
 (31 Aug 2017).
 
@@ -15,8 +15,8 @@ This documentation is accurate as of Stardate 2017.240
 ********************************************************************************
  */
 
-import EnglishTranslations from 'zooniversal-translator.en.js'; 
-import SpanishTranslations from 'zooniversal-translator.es.js'; 
+import EnglishTranslations from './zooniversal-translator.en.js'; 
+import SpanishTranslations from './zooniversal-translator.es.js'; 
 
 export function ZooTran(text) {
   const translations = ZooTranGetTranslationsObject();
