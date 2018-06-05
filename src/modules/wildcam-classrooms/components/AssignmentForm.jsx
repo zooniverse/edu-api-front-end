@@ -1,8 +1,8 @@
 /*
-ClassroomForm
--------------
+AssignmentForm
+--------------
 
-Component for viewing, editing, or deleting a single classroom.
+Component for viewing, editing, or deleting a single assignment.
 
 --------------------------------------------------------------------------------
  */
@@ -18,7 +18,7 @@ import StatusWorking from './StatusWorking';
 import StatusNotFound from './StatusNotFound';
 import StatusBorked from './StatusBorked';
 import StudentsList from './StudentsList';
-import AssignmentsList from './AssignmentsList';
+import SubjectsList from './SubjectsList';
 import ScrollToTopOnMount from '../../../containers/common/ScrollToTopOnMount';
 
 import Box from 'grommet/components/Box';
@@ -38,6 +38,9 @@ import CloseIcon from 'grommet/components/icons/base/Close';
 
 import { PROGRAMS_PROPTYPES, PROGRAMS_INITIAL_STATE } from '../../../ducks/programs';
 import {
+  WILDCAMMAP_INITIAL_STATE, WILDCAMMAP_PROPTYPES, WILDCAMMAP_MAP_STATE,
+} from '../../wildcam-map/ducks/index.js';
+import {
   WILDCAMCLASSROOMS_COMPONENT_MODES as MODES,
   WILDCAMCLASSROOMS_DATA_STATUS,
   WILDCAMCLASSROOMS_INITIAL_STATE,
@@ -51,7 +54,6 @@ import {
 
 const VIEWS = {
   CREATE_NEW: 'create',
-  VIEW_EXISTING: 'view',
   EDIT_EXISTING: 'edit',
   NOT_FOUND: 'not found',
 }
@@ -68,44 +70,42 @@ const TEXT = {
   WORKING: 'Working...',
   JOIN_URL: 'Join URL',
   HEADINGS: {
-    CLASSROOM: 'Classroom',
-    CREATE_NEW_CLASSROOM: 'Create new classroom',
-    EDIT_CLASSROOM: 'Edit classroom',
+    ASSIGNMENT: 'Assignment',
+    CREATE_NEW_ASSIGNMENT: 'Create new assignment',
+    EDIT_ASSIGNMENT: 'Edit assignment',
   },
-  CLASSROOM_FORM: {
-    NAME: 'Classroom name',
-    SUBJECT: 'Classroom subject',
-    SCHOOL: 'School',
-    DESCRIPTION: 'Description',
+  ASSIGNMENT_FORM: {
+    NAME: 'Assignment name',
+    DESCRIPTION: 'Instructions for Students',
   },
   ERROR: {
     GENERAL: 'Something went wrong',
   },
   SUCCESS: {
-    CLASSROOM_CREATED: 'Classroom created',
-    CLASSROOM_EDITED: 'Changes saved',
-    CLASSROOM_DELETED: 'Classroom deleted',
+    ASSIGNMENT_CREATED: 'Assignment created',
+    ASSIGNMENT_EDITED: 'Changes saved',
+    ASSIGNMENT_DELETED: 'Assignment deleted',
   },
 };
 
 const INITIAL_FORM_DATA = {
   name: '',
-  subject: '',
-  school: '',
-  description: '',  //Not used
+  description: '',
 };
 
 /*
 --------------------------------------------------------------------------------
  */
 
-class ClassroomForm extends React.Component {
+class AssignmentForm extends React.Component {
   constructor() {
     super();
     this.state = {
       view: VIEWS.CREATE_NEW,
-      form: INITIAL_FORM_DATA,
-      //TODO: students, an advanced form of data.
+      form: INITIAL_FORM_DATA,  //Contains basic Assignment data: name, description, etc.
+      filters: {},
+      subjects: [],
+      students: [],
     };
   }
   
@@ -120,69 +120,118 @@ class ClassroomForm extends React.Component {
   }
   
   /*  //Initialise:
-      //Fetch the selected classroom data.
+      //Fetch the selected assignment (and classroom) data.
       
-      Based on the route/URL, we'll either create a new classroom or edit an existing one.
-        .../classrooms/new - create a new classroom (i.e. no classroom_id parameter)
-        .../classrooms/123 - edit classroom 123 (i.e. classroom_id=123 supplied.)
+      Based on the route/URL, we'll either create a new assignment or edit an existing one.
+        .../classrooms/123/assignments/new - create a new assignment (i.e. no assignment_id parameter)
+        .../classrooms/123/assignments/456 - edit assignment 456 (i.e. assignment_id=456 supplied.)
    */
   initialise(props = this.props) {
+    console.log('+++ initialise: ');
     const state = this.state;
     
     const classroom_id = (props.match && props.match.params)
       ? props.match.params.classroom_id : undefined;
+    const assignment_id = (props.match && props.match.params)
+      ? props.match.params.assignment_id : undefined;
     
-    //Create a new classroom
-    if (!classroom_id) {  //Note: there should never be classroom_id === 0 or ''
+    //Sanity check
+    if (!classroom_id) return;
+    const selectedClassroom = props.classroomsList &&
+      props.classroomsList.find((classroom) => {
+        return classroom.id === classroom_id
+      });
+    if (!selectedClassroom) return;
+    
+    //Data store update + Redundancy Check (prevent infinite loop, only trigger once)
+    if (props.selectedClassroom !== selectedClassroom) {
+      Actions.wildcamClassrooms.setSelectedClassroom(selectedClassroom);
+    }
+    
+    //If we don't have a list of assignments yet, fetch it.
+    //Redundancy Check: prevent infinite loop, only trigger once.
+    if (props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.IDLE) {
+      Actions.wcc_fetchAssignments({ selectedClassroom });
+    } else {
+      this.initialise_partTwo(props, classroom_id, assignment_id, props.assignmentsList);
+    }
+    
+    //Check the connection to WildCam Maps: if the user recently selected
+    //Subjects for the Assignment, respect it.
+    console.log('+++ props.wccwcmSelectedSubjects: ', props.wccwcmSelectedSubjects);
+    if (props.wccwcmSelectedSubjects) {
+      this.setState({
+        subjects: props.wccwcmSelectedSubjects,
+        filters: props.wccwcmSelectedFilters,
+      });
+      Actions.wildcamMap.resetWccWcmAssignmentData();
+    }
+  }
+  
+  initialise_partTwo(props, classroom_id, assignment_id, assignmentsList) {
+    //Create a new assignment
+    if (!assignment_id) {  //Note: there should never be assignment_id === 0 or ''
       this.setState({ view: VIEWS.CREATE_NEW });
       this.initialiseForm(null);
     
-    //Edit an existing classroom... if we can find it.
+    //Edit an existing assignment... if we can find it.
     } else {
-      //Find the classroom
-      const selectedClassroom = props.classroomsList &&
-        props.classroomsList.find((classroom) => {
-          return classroom.id === classroom_id
+      const selectedAssignment = assignmentsList &&
+        assignmentsList.find((assignment) => {
+          return assignment.id === assignment_id
         });
-      
+
       //If classroom is found, edit it.
-      if (selectedClassroom) {
+      if (selectedAssignment) {
         //Data store update
-        Actions.wildcamClassrooms.setSelectedClassroom(selectedClassroom);
+        Actions.wildcamClassrooms.setSelectedAssignment(selectedAssignment);
         
-        //Fetch dependencies
-        //Redundancy Check: prevent infinite loop, only trigger once.
-        if (props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.IDLE) {
-          Actions.wcc_fetchAssignments({ selectedClassroom });
+        //Also extract initial subjects and filters used by the Assignment
+        if (!this.state.subjects || this.state.subjects.length === 0) {
+          console.log('+++ selectedAssignment: ', selectedAssignment);
+          const newSubjects = (selectedAssignment.metadata && selectedAssignment.metadata.subjects)
+            ? selectedAssignment.metadata.subjects.map((subject) => {
+                return {
+                  subject_id: subject,
+                  location: null,
+                };
+              })
+            : [];
+          const newFilters = (selectedAssignment.metadata)
+            ? selectedAssignment.metadata.filters
+            : {};
+          this.setState({
+            subjects: newSubjects,
+            filters: newFilters,
+          });
         }
         
         //View update
-        this.setState({ view: VIEWS.VIEW_EXISTING });
-        this.initialiseForm(selectedClassroom);
+        this.setState({ view: VIEWS.EDIT_EXISTING });
+        this.initialiseForm(selectedAssignment);
         
       //Otherwise, uh oh.
       } else {
         //Data store update
-        Actions.wildcamClassrooms.resetSelectedClassroom();
-        
+        Actions.wildcamClassrooms.resetSelectedAssignment();
+
         //View update
         this.setState({ view: VIEWS.NOT_FOUND });
       }
-      
     }
   }
   
   /*  Initialises the classroom form.
    */
-  initialiseForm(selectedClassroom) {
-    if (!selectedClassroom) {
+  initialiseForm(selectedAssignment) {
+    if (!selectedAssignment) {
       this.setState({ form: INITIAL_FORM_DATA });
     } else {
       const originalForm = INITIAL_FORM_DATA;
       const updatedForm = {};
       Object.keys(originalForm).map((key) => {
-        updatedForm[key] = (selectedClassroom && selectedClassroom[key])
-          ? selectedClassroom[key]
+        updatedForm[key] = (selectedAssignment && selectedAssignment[key])
+          ? selectedAssignment[key]
           : originalForm[key];
       });
       this.setState({ form: updatedForm });
@@ -213,41 +262,59 @@ class ClassroomForm extends React.Component {
     
     //Sanity check
     if (!props.selectedProgram) return;
-    if (state.view === VIEWS.VIEW_EXISTING && !props.selectedClassroom) return;
+    if (!props.selectedClassroom) return;
     
-    //Submit Form: create new classroom
+    //Submit Form: create new assignment
     if (state.view === VIEWS.CREATE_NEW) {
-      return Actions.wcc_teachers_createClassroom({
+      const filters = (state.filters) ? state.filters : {};
+      const subjects = (state.subjects)
+        ? state.subjects.map(sub => sub.subject_id)
+        : [];
+      
+      return Actions.wcc_teachers_createAssignment({
         selectedProgram: props.selectedProgram,
-        classroomData: this.state.form,
+        selectedClassroom: props.selectedClassroom,
+        assignmentData: state.form,
+        filters,
+        subjects,
+        students: state.students,
       })
       .then(() => {
         //Message
-        Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.CLASSROOM_CREATED, status: 'ok' });
+        Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_CREATED, status: 'ok' });
         
         //Refresh
         return Actions.wcc_teachers_refreshData({ selectedProgram: props.selectedProgram })
         .then(() => {
-          //Transition to: View All Classrooms
+          //Transition to: View Selected Classroom
           props.history && props.history.push('../');
         });
       }).catch((err) => {
-        //Error messaging done in Actions.wcc_teachers_createClassroom()
+        //Error messaging done in Actions.wcc_teachers_createAssignment()
       });
     
     //Submit Form: update existing classroom
     } else if (state.view === VIEWS.EDIT_EXISTING) {
-      return Actions.wcc_teachers_editClassroom({
-        selectedClassroom: props.selectedClassroom,
-        classroomData: this.state.form,
+      const filters = (state.filters) ? state.filters : {};
+      const subjects = (state.subjects)
+        ? state.subjects.map(sub => sub.subject_id)
+        : [];
+      
+      return Actions.wcc_editAssignment({
+        selectedAssignment: props.selectedAssignment,
+        assignmentData: state.form,
+        filters,
+        subjects,
+        students: state.students,        
       }).then(() => {
         //Message
-        Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.CLASSROOM_EDITED, status: 'ok' });
+        Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_EDITED, status: 'ok' });
         
         //Refresh
         return Actions.wcc_teachers_refreshData({
           selectedProgram: props.selectedProgram,
           selectedClassroom: props.selectedClassroom,
+          selectedAssignment: props.selectedAssignment,
         })
         .then(() => {
           //Nothing
@@ -272,10 +339,11 @@ class ClassroomForm extends React.Component {
     
     //State: Working
     //Data is being processed. Don't let the user do anything.
-    if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SENDING || props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.FETCHING) {
+    if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SENDING || props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.FETCHING ||
+        props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SENDING || props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.FETCHING) {
       return (
         <Box
-          className="classroom-form"
+          className="assignment-form"
           margin="medium"
           pad="medium"
         >
@@ -286,14 +354,13 @@ class ClassroomForm extends React.Component {
     
     //State: Ready
     //Page is now ready to accept user input.
-    if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS) {
+    if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS && props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS) {
       return (
         <Box
-          className="classroom-form"
+          className="assignment-form"
           margin="medium"
           pad="medium"
         >
-          {(state.view === VIEWS.VIEW_EXISTING) ? this.render_viewState() : null }
           {(state.view === VIEWS.CREATE_NEW || state.view === VIEWS.EDIT_EXISTING) ? this.render_editState() : null }
           {(state.view === VIEWS.NOT_FOUND) ? this.render_notFoundState() : null }
 
@@ -303,10 +370,11 @@ class ClassroomForm extends React.Component {
     }
     
     //State: Error
-    if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.ERROR) {
+    if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.ERROR ||
+        props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.ERROR) {
       return (
         <Box
-          className="classroom-form"
+          className="assignment-form"
           margin="medium"
           pad="medium"
         >
@@ -318,88 +386,6 @@ class ClassroomForm extends React.Component {
     //State: WTF
     //How did we even get here?
     return null;
-  }
-  
-  render_viewState() {
-    const props = this.props;
-    const state = this.state;
-    
-    //Sanity check
-    if (!props.selectedClassroom) return;
-    
-    const joinURL = `${config.origin}/#/${props.selectedProgram.slug}/students/classrooms/${props.selectedClassroom.id}/join?token=${props.selectedClassroom.joinToken}`;
-    
-    return (
-      <Box
-        className="details"
-        onSubmit={this.submitForm.bind(this)}
-      >
-        <Heading tag="h2">
-          {TEXT.HEADINGS.CLASSROOM} - {props.selectedClassroom.name}
-        </Heading>
-        
-        <List className="details-list">
-          {(props.selectedClassroom.subject) ? (
-            <ListItem pad="small" separator="none">
-              <Label>{TEXT.CLASSROOM_FORM.SUBJECT}</Label>
-              <span>{props.selectedClassroom.subject}</span>
-            </ListItem>
-          ) : null}
-          {(props.selectedClassroom.school) ? (
-            <ListItem pad="small" separator="none">
-              <Label>{TEXT.CLASSROOM_FORM.SCHOOL}</Label>
-              <span>{props.selectedClassroom.school}</span>
-            </ListItem>
-          ) : null}
-          <ListItem pad="small" separator="none">
-            <Label>{TEXT.JOIN_URL}</Label>
-            <span>{joinURL}</span>
-          </ListItem>
-        </List>
-
-        <Footer
-          className="actions-panel"
-          pad="medium"
-        >
-          <Button
-            className="button"
-            icon={<LinkPreviousIcon size="small" />}
-            label={TEXT.ACTIONS.BACK}
-            onClick={() => {
-              //Transition to: View All Classrooms
-              props.history && props.history.push('../');
-            }}
-          />
-          <Button
-            className="button"
-            icon={<LinkNextIcon size="small" />}
-            label={TEXT.ACTIONS.EDIT}
-            onClick={() => {
-              //In-page transition to: Edit mode
-              this.setState({ view: VIEWS.EDIT_EXISTING });
-            }}
-          />
-        </Footer>
-        
-        <AssignmentsList
-          selectedClassroom={props.selectedClassroom}
-          assignmentsList={props.assignmentsList}
-          history={props.history}
-          location={props.location}
-          match={props.match}
-        />
-        
-        <StudentsList
-          selectedClassroom={props.selectedClassroom}
-          selectedAssignment={null}
-          doUpdateStudents={(updatedListOfStudents) => {
-            //TODO
-            alert('ALPHA: This feature is a work in progress.');
-            console.log('+++ Updated List of Students: ', updatedListOfStudents);
-          }}
-        />
-      </Box>
-    );
   }
   
   render_editState() {
@@ -414,15 +400,15 @@ class ClassroomForm extends React.Component {
         <Heading tag="h2">
           {(() => {
             switch (state.view) {
-              case VIEWS.CREATE_NEW: return TEXT.HEADINGS.CREATE_NEW_CLASSROOM;
-              case VIEWS.EDIT_EXISTING: return TEXT.HEADINGS.EDIT_CLASSROOM;
+              case VIEWS.CREATE_NEW: return TEXT.HEADINGS.CREATE_NEW_ASSIGNMENT;
+              case VIEWS.EDIT_EXISTING: return TEXT.HEADINGS.EDIT_ASSIGNMENT;
               default: return '???';  //This should never trigger
             }
           })()}
         </Heading>
 
         <fieldset>
-          <FormField htmlFor="name" label={TEXT.CLASSROOM_FORM.NAME}>
+          <FormField htmlFor="name" label={TEXT.ASSIGNMENT_FORM.NAME}>
             <TextInput
               id="name"
               required={true}
@@ -433,39 +419,35 @@ class ClassroomForm extends React.Component {
         </fieldset>
 
         <fieldset>
-          <FormField htmlFor="subject" label={TEXT.CLASSROOM_FORM.SUBJECT}>
-            <TextInput
-              id="subject"
-              value={this.state.form.subject}
-              onDOMChange={this.updateForm.bind(this)}
+          <FormField htmlFor="subject" label={TEXT.ASSIGNMENT_FORM.DESCRIPTION}>
+            <textarea
+              id="description"
+              value={this.state.form.description}
+              onChange={this.updateForm.bind(this)}
             />
           </FormField>
         </fieldset>
-
-        <fieldset>
-          <FormField htmlFor="school" label={TEXT.CLASSROOM_FORM.SCHOOL}>
-            <TextInput
-              id="school"
-              value={this.state.form.school}
-              onDOMChange={this.updateForm.bind(this)}
-            />
-          </FormField>
-        </fieldset>
-
-        {
-        //Removed at the request of HHMI, based on teacher feedback
-        //--------
-        //<fieldset>
-        //  <FormField htmlFor="school" label={TEXT.CLASSROOM_FORM.DESCRIPTION}>
-        //    <TextInput
-        //      id="description"
-        //      value={this.state.form.description}
-        //      onDOMChange={this.updateForm.bind(this)}
-        //    />
-        //  </FormField>
-        //</fieldset>
-        //--------
-        }
+        
+        <SubjectsList
+          history={props.history}
+          location={props.location}
+          match={props.match}
+          selectedClassroom={props.selectedClassroom}
+          selectedAssignment={props.selectedAssignment}
+          filters={state.filters}
+          subjects={state.subjects}
+          wccwcmMapPath={props.wccwcmMapPath}
+        />
+        
+        <StudentsList
+          selectedClassroom={props.selectedClassroom}
+          selectedAssignment={props.selectedAssignment}
+          doUpdateStudents={(updatedListOfStudents) => {
+            //TODO
+            alert('ALPHA: This feature is a work in progress.');
+            console.log('+++ Updated List of Students: ', updatedListOfStudents);
+          }}
+        />
 
         <Footer
           className="actions-panel"
@@ -476,13 +458,7 @@ class ClassroomForm extends React.Component {
             icon={<LinkPreviousIcon size="small" />}
             label={TEXT.ACTIONS.BACK}
             onClick={() => {
-              if (state.view === VIEWS.CREATE_NEW) {
-                //Transition to: View All Classrooms
-                props.history && props.history.push('../');
-              } else if (state.view === VIEWS.EDIT_EXISTING) {
-                //In-page transition to: Edit mode
-                this.setState({ view: VIEWS.VIEW_EXISTING });
-              }
+              props.history && props.history.push('../');
             }}
           />
           <Button
@@ -505,19 +481,19 @@ class ClassroomForm extends React.Component {
                 icon={<CloseIcon size="small" />}
                 label={TEXT.ACTIONS.DELETE}
                 onClick={() => {
-                  return Actions.wcc_teachers_deleteClassroom(props.selectedClassroom)
+                  return Actions.wcc_deleteAssignment(props.selectedAssignment)
                   .then(() => {
                     //Message
-                    Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.CLASSROOM_DELETED, status: 'ok' });
+                    Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_DELETED, status: 'ok' });
                     
                     //Refresh
-                    return Actions.wcc_teachers_refreshData({ selectedProgram: props.selectedProgram })
+                    return Actions.wcc_teachers_refreshData({ selectedProgram: props.selectedProgram, selectedClassroom: props.selectedClassroom })
                     .then(() => {
-                      //Transition to: View All Classrooms
+                      //Transition to: View Selected Classroom
                       props.history && props.history.push('../');
                     });
                   }).catch((err) => {
-                    //Error messaging done in Actions.wcc_teachers_deleteClassroom()
+                    //Error messaging done in Actions.wcc_deleteAssignment()
                   });
                 }}
               />
@@ -554,7 +530,7 @@ class ClassroomForm extends React.Component {
 --------------------------------------------------------------------------------
  */
 
-ClassroomForm.defaultProps = {
+AssignmentForm.defaultProps = {
   history: null,
   location: null,
   match: null,
@@ -562,9 +538,10 @@ ClassroomForm.defaultProps = {
   selectedProgram: PROGRAMS_INITIAL_STATE.selectedProgram,  
   // ----------------
   ...WILDCAMCLASSROOMS_INITIAL_STATE,
+  ...WILDCAMMAP_INITIAL_STATE,
 };
 
-ClassroomForm.propTypes = {
+AssignmentForm.propTypes = {
   history: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -572,13 +549,15 @@ ClassroomForm.propTypes = {
   selectedProgram: PROGRAMS_PROPTYPES.selectedProgram,
   // ----------------
   ...WILDCAMCLASSROOMS_PROPTYPES,
+  ...WILDCAMMAP_PROPTYPES,
 };
 
 function mapStateToProps(state) {
   return {
     selectedProgram: state.programs.selectedProgram,
     ...WILDCAMCLASSROOMS_MAP_STATE(state),
+    ...WILDCAMMAP_MAP_STATE(state),
   };
 }
 
-export default connect(mapStateToProps)(ClassroomForm);
+export default connect(mapStateToProps)(AssignmentForm);

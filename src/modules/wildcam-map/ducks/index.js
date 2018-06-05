@@ -65,7 +65,13 @@ const WILDCAMMAP_INITIAL_STATE = {
   activeCameraData: null,
   activeCameraDataStatus: WILDCAMMAP_CAMERA_STATUS.IDLE,
   
-  filters: {},  //Selected filtes
+  filters: {},  //Selected filters
+  
+  //Connection between WildCam Classroom and WildCam Map
+  wccwcmMapPath: '',  //The URL/path that the Teacher is taken to when they click on "Select subject" in the WildCam Classroom - Create Assignment stage. Must be registered early on in the Program.
+  wccwcmAssignmentPath: '',  //The URL/path that the Teacher is returned to when they finally finish selecting subjects on the WildCam Map.
+  wccwcmSelectedSubjects: null,
+  wccwcmSelectedFilters: null,
 };
 
 /*
@@ -96,6 +102,11 @@ const WILDCAMMAP_PROPTYPES = {
   activeCameraDataStatus: PropTypes.string,
   
   filters: PropTypes.object,  //Dynamically constructed object.
+  
+  wccwcmMapPath: PropTypes.string,
+  wccwcmAssignmentPath: PropTypes.string,
+  wccwcmSelectedSubjects: PropTypes.array,
+  wccwcmSelectedFilters: PropTypes.object,
 };
 
 /*  WILDCAMMAP_MAP_STATE is used as a convenience feature in mapStateToProps()
@@ -209,6 +220,31 @@ const setFilterSelectionItem = (state, key, value) => {
   }
   return { ...state, filters };
 };
+
+
+/*  WildCam Classroom-WildCam Map connection functions
+ */
+const resetWccWcmAssignmentData = (state) => {
+  return {
+    ...state,
+    //Maintain the Map Path, however
+    wccwcmAssignmentPath: WILDCAMMAP_INITIAL_STATE.wccwcmAssignmentPath,
+    wccwcmSelectedSubjects: WILDCAMMAP_INITIAL_STATE.wccwcmSelectedSubjects,
+    wccwcmSelectedFilters: WILDCAMMAP_INITIAL_STATE.wccwcmSelectedFilters,
+  }
+}
+const setWccWcmMapPath = (state, wccwcmMapPath) => {
+  return { ...state, wccwcmMapPath };
+}
+const setWccWcmAssignmentPath = (state, wccwcmAssignmentPath) => {
+  return { ...state, wccwcmAssignmentPath };
+}
+const setWccWcmSelectedSubjects = (state, wccwcmSelectedSubjects) => {
+  return { ...state, wccwcmSelectedSubjects };
+}
+const setWccWcmSelectedFilters = (state, wccwcmSelectedFilters) => {
+  return { ...state, wccwcmSelectedFilters };
+}
 
 /*
 --------------------------------------------------------------------------------
@@ -353,6 +389,11 @@ const wildcamMap = State('wildcamMap', {
   addFilterSelectionItem,
   removeFilterSelectionItem,
   setFilterSelectionItem,
+  resetWccWcmAssignmentData,
+  setWccWcmMapPath,
+  setWccWcmAssignmentPath,
+  setWccWcmSelectedSubjects,
+  setWccWcmSelectedFilters,
 });
 
 export default wildcamMap;

@@ -16,16 +16,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
+import superagent from 'superagent';
 
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
+import Label from 'grommet/components/Label';
+import NumberInput from 'grommet/components/NumberInput';
 import MultiChoiceFilter from '../components/MultiChoiceFilter';
 import SuperDownloadButton from '../../../components/common/SuperDownloadButton';
 
 import Accordion from 'grommet/components/Accordion';
 import AccordionPanel from 'grommet/components/AccordionPanel';
 
-import { constructWhereClause } from '../lib/wildcam-map-helpers.js';
+import { constructWhereClause, sqlString } from '../lib/wildcam-map-helpers.js';
 import { ZooTran, ZooTranGetLanguage } from '../../../lib/zooniversal-translator.js';
 
 import {
@@ -36,6 +39,12 @@ import {
 class MapControls extends React.Component {
   constructor(props) {
     super(props);
+  
+    this.state = {
+      wccAssignmentsStatus: WILDCAMMAP_MARKERS_STATUS.IDLE,
+      wccAssignmentsStatusDetails: null,
+      wccAssignmentsNumberOfSubjects: 0,
+    };
   }
 
   //----------------------------------------------------------------
@@ -94,6 +103,72 @@ class MapControls extends React.Component {
                 onClick={() => { this.props.setLanguage('es') }}
               />
             </Box>
+            
+            {(this.state.wccAssignmentsStatus === WILDCAMMAP_MARKERS_STATUS.IDLE || this.state.wccAssignmentsStatus === WILDCAMMAP_MARKERS_STATUS.SUCCESS) &&
+              (this.props.wccwcmAssignmentPath) && (
+              <Box
+                className="wccwcm-connector"
+                direction="column"
+                pad="small"
+                margin="small"
+                align="center"
+                alignContent="between"
+              >
+                <Label>Select subjects for Assignment</Label>
+                <Box
+                  direction="row"
+                >
+                  <NumberInput
+                    min={0}
+                    max={this.props.markersDataCount}
+                    value={this.state.wccAssignmentsNumberOfSubjects}
+                    onChange={(e) => {
+                      let val = e.target && parseInt(e.target.value);
+                      if (e.target.value === '') val = 0;
+                      if (isNaN(val)) val = this.props.markersDataCount;
+                      val = Math.min(val, this.props.markersDataCount);
+                      val = Math.max(val, 0);
+                      this.setState({ wccAssignmentsNumberOfSubjects: val });
+                    }}
+                  />
+                  <Button
+                    className="button"
+                    label="Select"
+                    onClick={this.selectSubjectsForAssignment.bind(this)}
+                  />
+                </Box>
+              </Box>
+            )}
+            
+            {(this.state.wccAssignmentsStatus === WILDCAMMAP_MARKERS_STATUS.FETCHING) && (
+              <Box
+                className="wccwcm-connector"
+                direction="column"
+                pad="small"
+                margin="small"
+                align="center"
+                alignContent="between"
+              >
+                <Label>Preparing...</Label>
+              </Box>
+            )}
+            
+            {(this.state.wccAssignmentsStatus === WILDCAMMAP_MARKERS_STATUS.ERROR) && (
+              <Box
+                className="wccwcm-connector"
+                direction="column"
+                pad="small"
+                margin="small"
+                align="center"
+                alignContent="between"
+              >
+                <Label>
+                  ERROR:&nbsp;
+                  {this.state.wccAssignmentsStatusDetails && this.state.wccAssignmentsStatusDetails.toString && this.state.wccAssignmentsStatusDetails.toString()}
+                </Label>
+              </Box>
+            )}
+            
           </AccordionPanel>
         </Accordion>
         <Accordion openMulti={true}>
@@ -131,17 +206,83 @@ class MapControls extends React.Component {
         filters: props.filters,
       });
     }
+    this.setState({ wccAssignmentsNumberOfSubjects: props.markersDataCount });
+  }
+
+  /*  Save the data that WildCam Classrooms will find interesting.
+   */
+  selectSubjectsForAssignment() {
+    
+    const mapConfig = this.props.mapConfig;
+    
+    //Sanity check
+    if (!mapConfig) return;
+    
+    const where = constructWhereClause(mapConfig, this.props.filters);
+    const url = mapConfig.database.urls.json.replace(
+      '{SQLQUERY}',
+      encodeURIComponent(
+        mapConfig.database.queries.selectForAssignment
+        .replace('{WHERE}', where)
+        .replace('{ORDER}', ' ORDER BY subject_id DESC ')
+        .replace('{LIMIT}', ` LIMIT ${this.state.wccAssignmentsNumberOfSubjects}`)
+      )
+    );
+    
+    this.setState({
+      wccAssignmentsStatus: WILDCAMMAP_MARKERS_STATUS.FETCHING,
+      wccAssignmentsStatusDetails: null,
+    });
+    
+    superagent.get(url)
+    .then(response => {
+      if (!response) { throw 'ERROR (wildcam-map/MapControls.selectSubjectsForAssignment()): No response'; }
+      if (response.ok && response.body && response.body.rows) {
+        return response.body.rows;
+      }
+      throw 'ERROR (wildcam-map/MapControls.selectSubjectsForAssignment()): invalid response';
+    })
+    .then(data => {
+      const copyOfFilters = JSON.parse(JSON.stringify(this.props.filters));
+      const copyOfSubjects = data;
+
+      Actions.wildcamMap.setWccWcmSelectedFilters(copyOfFilters);
+      Actions.wildcamMap.setWccWcmSelectedSubjects(copyOfSubjects);
+      
+      this.setState({ wccAssignmentsStatus: WILDCAMMAP_MARKERS_STATUS.SUCCESS });
+
+      //Transition to: Assignment creation
+      this.props.history.push(this.props.wccwcmAssignmentPath);
+      
+    })
+    .catch(err => {
+      this.setState({
+        wccAssignmentsStatus: WILDCAMMAP_MARKERS_STATUS.ERROR,
+        wccAssignmentsStatusDetails: err,
+      });
+      console.error(err);
+    });
   }
 }
 
 MapControls.propTypes = {
   mapConfig: PropTypes.object,
   setLanguage: PropTypes.func,
+  // ----------------
+  history: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object,
+  // ----------------
   ...WILDCAMMAP_PROPTYPES,
 };
 MapControls.defaultProps = {
   mapConfig: null,
   setLanguage: () => {},
+  // ----------------
+  history: null,
+  location: null,
+  match: null,
+  // ----------------
   ...WILDCAMMAP_INITIAL_STATE,
 };
 const mapStateToProps = (state) => ({

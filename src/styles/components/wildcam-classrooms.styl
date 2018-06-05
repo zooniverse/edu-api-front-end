@@ -5,15 +5,49 @@ BORDER_SIZE = 0.25rem
   .classrooms-list
     border: BORDER_SIZE solid TEAL_MID
     
+    .table
+      .button
+        max-width: 10em
+    
   .classroom-form
+  .assignment-form
     border: BORDER_SIZE solid TEAL_MID
+    
+    .details-list
+      > li
+        label
+          margin: 0
+          min-width: 12em
+          flex: 1 0 auto
+          
+        span
+          flex: 0 1 auto
+    
+    .subjects-list
+      .data-subjects
+        .item
+          display: inline-block
+          max-width: 10em
+          
+          img
+            display: block
+            width: 100%
+    
+    textarea
+      min-height: 8em
+  
+  .students-list
+    border: BORDER_SIZE solid #fff
+  
+  .assignments-list
+    border: BORDER_SIZE solid #fff
+  
+  .subjects-list
+    border: BORDER_SIZE solid #fff
 
   .status-box
     background: TEAL_LIGHT
 
   .actions-panel
-    display: flex
-    justify-content: center
-    
     .button
       margin: 0 0.5em

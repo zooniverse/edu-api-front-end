@@ -32,6 +32,7 @@ import Box from 'grommet/components/Box';
 import MapVisuals from './MapVisuals';
 import MapControls from './MapControls';
 import CameraViewer from '../components/CameraViewer';
+import ScrollToTopOnMount from '../../../containers/common/ScrollToTopOnMount';
 
 import {
   ZooTran, ZooTranSetLanguage,
@@ -60,6 +61,9 @@ class MapExplorer extends React.Component {
           ? <MapControls
               mapConfig={this.props.mapConfig}
               setLanguage={this.setLanguage}
+              history={this.props.history}
+              location={this.props.location}
+              match={this.props.match}
             />
           : <CameraViewer
               mapConfig={this.props.mapConfig}
@@ -69,6 +73,7 @@ class MapExplorer extends React.Component {
               activeCameraMetadataStatus={this.props.activeCameraMetadataStatus}
             />
         }
+        <ScrollToTopOnMount />
       </Box>
     );
   }
@@ -84,10 +89,20 @@ class MapExplorer extends React.Component {
 
 MapExplorer.propTypes = {
   mapConfig: PropTypes.object,
+  // ----------------
+  history: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object,
+  // ----------------
   ...WILDCAMMAP_PROPTYPES,
 };
 MapExplorer.defaultProps = {
   mapConfig: null,
+  // ----------------
+  history: null,
+  location: null,
+  match: null,
+  // ----------------
   ...WILDCAMMAP_INITIAL_STATE,
 };
 const mapStateToProps = (state) => ({

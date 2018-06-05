@@ -18,17 +18,28 @@ class DarienEducators extends React.Component {
     return (
       <WildCamClassrooms
         selectedProgram={this.props.selectedProgram}
+        location={this.props.match}
+        history={this.props.history}
+        match={this.props.match}
       />
     );
   }
 };
 
-DarienEducators.propTypes = {
-  selectedProgram: PropTypes.object,
+DarienEducators.defaultProps = {
+  history: null,
+  location: null,
+  match: null,
+  // ----------------
+  selectedProgram: null,
 };
 
-DarienEducators.defaultProps = {
-  selectedProgram: null,
+DarienEducators.propTypes = {
+  history: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object,
+  // ----------------
+  selectedProgram: PropTypes.object,
 };
 
 function mapStateToProps(state) {

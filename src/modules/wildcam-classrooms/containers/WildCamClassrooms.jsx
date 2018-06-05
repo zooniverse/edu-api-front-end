@@ -9,15 +9,18 @@ WildCam-type programs/projects.
  */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
+import { Switch, Route } from 'react-router-dom';
 
 import Box from 'grommet/components/Box';
-import Button from 'grommet/components/Button';
 import Toast from 'grommet/components/Toast';
 
 import ClassroomsList from '../components/ClassroomsList';
 import ClassroomForm from '../components/ClassroomForm';
+import AssignmentForm from '../components/AssignmentForm';
+import Status404 from '../../../components/common/Status404';
 
 import { PROGRAMS_PROPTYPES, PROGRAMS_INITIAL_STATE } from '../../../ducks/programs';
 import {
@@ -28,9 +31,9 @@ import {
   WILDCAMCLASSROOMS_MAP_STATE,
 } from '../ducks/index.js';
 
-const TEXT = {
-  
-};
+/*
+--------------------------------------------------------------------------------
+ */
 
 class WildCamClassroom extends React.Component {
   constructor() {
@@ -39,31 +42,29 @@ class WildCamClassroom extends React.Component {
   
   componentDidMount() {
     //Get the list of Classrooms and Assignments.
-    this.initialiseList(this.props);
+    this.initialise(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
     //Get the list of Classrooms and Assignments.
-    if (this.props.selectedProgram !== nextProps.selectedProgram) this.initialiseList(nextProps);
+    if (this.props.selectedProgram !== nextProps.selectedProgram) this.initialise(nextProps);
   }
   
-  initialiseList(props = this.props) {
+  //Initialise:
+  //Fetch the classroom data for this Program.
+  initialise(props = this.props) {
     //Sanity check
     if (!props.selectedProgram) return;
     
-    //Initial mode
-    Actions.wildcamClassrooms.setComponentMode(MODES.VIEW_ALL_CLASSROOMS);
-    
-    Actions.wcc_teachers_fetchClassrooms(props.selectedProgram)
+    return Actions.wcc_teachers_fetchClassrooms({ selectedProgram: props.selectedProgram })
     .then(() => {
-      //Transition to: View All Classrooms
-      Actions.wildcamClassrooms.resetSelectedClassroom();
-      Actions.wildcamClassrooms.setComponentMode(MODES.VIEW_ALL_CLASSROOMS);
+      //Nothing
     });
   }
 
   render() {
     const props = this.props;
+    const match = (props.match) ? props.match : {};
 
     //Sanity check
     if (!props.selectedProgram) return null;
@@ -82,40 +83,37 @@ class WildCamClassroom extends React.Component {
           </Toast>
         )}
         
-        {props.componentMode === MODES.VIEW_ALL_CLASSROOMS && (
-          <ClassroomsList
-            classroomsList={props.classroomsList}
-            classroomsStatus={props.classroomsStatus}
-            selectedClassroom={props.selectedClassroom}
+        <Switch>
+          <Route
+            path={`${match.url}/classrooms/:classroom_id/assignments/new`} exact
+            component={AssignmentForm}
           />
-        )}
-
-        {props.componentMode === MODES.VIEW_ONE_CLASSROOM && (
-          <ClassroomForm
-            view={ClassroomForm.VIEWS.EDIT}
-            componentMode={props.componentMode}
-            selectedProgram={props.selectedProgram}
-            classroomsStatus={props.classroomsStatus}
-            selectedClassroom={props.selectedClassroom}
+          <Route
+            path={`${match.url}/classrooms/:classroom_id/assignments/:assignment_id`} exact
+            component={AssignmentForm}
           />
-        )}
-        
-        {props.componentMode === MODES.CREATE_NEW_CLASSROOM && (
-          <ClassroomForm
-            view={ClassroomForm.VIEWS.CREATE}
-            componentMode={props.componentMode}
-            selectedProgram={props.selectedProgram}
-            classroomsStatus={props.classroomsStatus}
-            selectedClassroom={null}
+          <Route
+            path={`${match.url}/classrooms/new`} exact
+            component={ClassroomForm}
           />
-        )}
+          <Route
+            path={`${match.url}/classrooms/:classroom_id`} exact
+            component={ClassroomForm}
+          />
+          <Route
+            path={`${match.url}`} exact
+            component={ClassroomsList}
+          />
+          <Route path="*" component={Status404} />
+        </Switch>
         
         <Box pad="medium">
           <h4>Debug Panel</h4>
           <Box>
             Classrooms Status: [{props.classroomsStatus}] <br/>
             Classrooms Count: [{props.classroomsList && props.classroomsList.length}] <br/>
-            Component Mode: {props.componentMode}
+            Assignments Status: [{props.assignmentsStatus}] <br/>
+            Assignments Count: [{props.assignmentsList && props.assignmentsList.length}] <br/>
           </Box>
         </Box>
 
@@ -124,13 +122,25 @@ class WildCamClassroom extends React.Component {
   }
 }
 
+/*
+--------------------------------------------------------------------------------
+ */
+
 WildCamClassroom.defaultProps = {
+  history: null,
+  location: null,
+  match: null,
+  // ----------------
   selectedProgram: PROGRAMS_INITIAL_STATE.selectedProgram,  //Passed from parent.
   // ----------------
   ...WILDCAMCLASSROOMS_INITIAL_STATE,
 };
 
 WildCamClassroom.propTypes = {
+  history: PropTypes.object,
+  location: PropTypes.object,
+  match: PropTypes.object,
+  // ----------------
   selectedProgram: PROGRAMS_PROPTYPES.selectedProgram,
   // ----------------
   ...WILDCAMCLASSROOMS_PROPTYPES,
