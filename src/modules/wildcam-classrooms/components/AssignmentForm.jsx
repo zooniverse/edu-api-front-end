@@ -31,6 +31,7 @@ import Label from 'grommet/components/Label';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import TextInput from 'grommet/components/TextInput';
+import NumberInput from 'grommet/components/NumberInput';
 
 import LinkPreviousIcon from 'grommet/components/icons/base/LinkPrevious';
 import LinkNextIcon from 'grommet/components/icons/base/LinkNext';
@@ -76,7 +77,12 @@ const TEXT = {
   },
   ASSIGNMENT_FORM: {
     NAME: 'Assignment name',
-    DESCRIPTION: 'Instructions for Students',
+    DESCRIPTION: 'Instructions for students',
+    CLASSIFICATIONS_TARGET: 'Number of subjects each student needs to classify',
+    DUEDATE: 'Due date',
+  },
+  ASSIGNMENT_FORM_PLACEHOLDERS: {
+    DUEDATE: 'e.g. 2020-12-31',
   },
   ERROR: {
     GENERAL: 'Something went wrong',
@@ -91,6 +97,8 @@ const TEXT = {
 const INITIAL_FORM_DATA = {
   name: '',
   description: '',
+  classifications_target: '',
+  duedate: '',
 };
 
 /*
@@ -103,6 +111,7 @@ class AssignmentForm extends React.Component {
     this.state = {
       view: VIEWS.CREATE_NEW,
       form: INITIAL_FORM_DATA,  //Contains basic Assignment data: name, description, etc.
+      formInitialised: false,  //Has initialiseForm() already been run?
       filters: {},
       subjects: [],
       students: [],
@@ -127,7 +136,6 @@ class AssignmentForm extends React.Component {
         .../classrooms/123/assignments/456 - edit assignment 456 (i.e. assignment_id=456 supplied.)
    */
   initialise(props = this.props) {
-    console.log('+++ initialise: ');
     const state = this.state;
     
     const classroom_id = (props.match && props.match.params)
@@ -145,6 +153,7 @@ class AssignmentForm extends React.Component {
     
     //Data store update + Redundancy Check (prevent infinite loop, only trigger once)
     if (props.selectedClassroom !== selectedClassroom) {
+      //this.setState({ formInitialised: false });
       Actions.wildcamClassrooms.setSelectedClassroom(selectedClassroom);
     }
     
@@ -155,24 +164,13 @@ class AssignmentForm extends React.Component {
     } else {
       this.initialise_partTwo(props, classroom_id, assignment_id, props.assignmentsList);
     }
-    
-    //Check the connection to WildCam Maps: if the user recently selected
-    //Subjects for the Assignment, respect it.
-    console.log('+++ props.wccwcmSelectedSubjects: ', props.wccwcmSelectedSubjects);
-    if (props.wccwcmSelectedSubjects) {
-      this.setState({
-        subjects: props.wccwcmSelectedSubjects,
-        filters: props.wccwcmSelectedFilters,
-      });
-      Actions.wildcamMap.resetWccWcmAssignmentData();
-    }
   }
   
   initialise_partTwo(props, classroom_id, assignment_id, assignmentsList) {
     //Create a new assignment
     if (!assignment_id) {  //Note: there should never be assignment_id === 0 or ''
       this.setState({ view: VIEWS.CREATE_NEW });
-      this.initialiseForm(null);
+      this.initialiseForm(props, null);
     
     //Edit an existing assignment... if we can find it.
     } else {
@@ -188,7 +186,6 @@ class AssignmentForm extends React.Component {
         
         //Also extract initial subjects and filters used by the Assignment
         if (!this.state.subjects || this.state.subjects.length === 0) {
-          console.log('+++ selectedAssignment: ', selectedAssignment);
           const newSubjects = (selectedAssignment.metadata && selectedAssignment.metadata.subjects)
             ? selectedAssignment.metadata.subjects.map((subject) => {
                 return {
@@ -208,7 +205,7 @@ class AssignmentForm extends React.Component {
         
         //View update
         this.setState({ view: VIEWS.EDIT_EXISTING });
-        this.initialiseForm(selectedAssignment);
+        this.initialiseForm(props, selectedAssignment);
         
       //Otherwise, uh oh.
       } else {
@@ -223,28 +220,65 @@ class AssignmentForm extends React.Component {
   
   /*  Initialises the classroom form.
    */
-  initialiseForm(selectedAssignment) {
+  initialiseForm(props, selectedAssignment) {
+    //Only run this once per page load, thank you.
+    if (this.state.formInitialised) return;
+    this.setState({ formInitialised: true });
+    
     if (!selectedAssignment) {
       this.setState({ form: INITIAL_FORM_DATA });
     } else {
       const originalForm = INITIAL_FORM_DATA;
       const updatedForm = {};
       Object.keys(originalForm).map((key) => {
-        updatedForm[key] = (selectedAssignment && selectedAssignment[key])
-          ? selectedAssignment[key]
-          : originalForm[key];
+        //The structure for Assignments is weird.
+        if (selectedAssignment && selectedAssignment.metadata && selectedAssignment.metadata[key]) {
+          updatedForm[key] = selectedAssignment.metadata[key];
+        } else if (selectedAssignment && selectedAssignment.attributes && selectedAssignment.attributes[key]) {
+          updatedForm[key] = selectedAssignment.attributes[key];
+        } else {
+          updatedForm[key] = originalForm[key];
+        }
       });
       this.setState({ form: updatedForm });
+    }
+    
+    //WildCam Map Selected Subjects:
+    //Check the connection to WildCam Maps to see if the user recently selected
+    //Subjects for the Assignment.
+    if (props.wccwcmSelectedSubjects && props.wccwcmSavedAssignmentState) {
+      this.setState({
+        subjects: props.wccwcmSelectedSubjects,
+        filters: props.wccwcmSelectedFilters,
+        form: {
+          ...this.state.form,
+          ...props.wccwcmSavedAssignmentState,
+          classifications_target: props.wccwcmSelectedSubjects.length,
+        }
+      });
+      Actions.wildcamMap.resetWccWcmAssignmentData();
     }
   }
   
   // ----------------------------------------------------------------
   
   updateForm(e) {
+    let val = e.target.value;
+    
+    //Special case: classificatons_target
+    //The number of Classfications a Student needs to do cannot exceed the amount of Subjects selected.
+    if (e.target.id === 'classifications_target') {
+      let maxVal = (this.state.subjects) ? this.state.subjects.length : 0;
+      val = parseInt(val);
+      if (isNaN(val)) val = 0;
+      val = Math.min(maxVal, val);
+      val = Math.max(0, val);
+    }
+    
     this.setState({
       form: {
         ...this.state.form,
-        [e.target.id]: e.target.value
+        [e.target.id]: val,
       }
     });
     
@@ -305,7 +339,7 @@ class AssignmentForm extends React.Component {
         assignmentData: state.form,
         filters,
         subjects,
-        students: state.students,        
+        students: state.students,
       }).then(() => {
         //Message
         Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_EDITED, status: 'ok' });
@@ -428,6 +462,21 @@ class AssignmentForm extends React.Component {
           </FormField>
         </fieldset>
         
+        <fieldset>
+          <FormField htmlFor="name" label={TEXT.ASSIGNMENT_FORM.DUEDATE}>
+            <TextInput
+              id="duedate"
+              value={this.state.form.duedate}
+              onDOMChange={this.updateForm.bind(this)}
+              placeHolder={TEXT.ASSIGNMENT_FORM_PLACEHOLDERS.DUEDATE}
+            />
+          </FormField>
+        </fieldset>
+        
+        {
+          //TODO: add (optional) Assignment link for students?
+        }
+        
         <SubjectsList
           history={props.history}
           location={props.location}
@@ -437,7 +486,20 @@ class AssignmentForm extends React.Component {
           filters={state.filters}
           subjects={state.subjects}
           wccwcmMapPath={props.wccwcmMapPath}
+          assignmentStateForSaving={state.form}
         />
+        
+        {(state.subjects && state.subjects.length > 0) && (
+          <fieldset>
+            <FormField htmlFor="name" label={TEXT.ASSIGNMENT_FORM.CLASSIFICATIONS_TARGET}>
+              <NumberInput
+                id="classifications_target"
+                value={this.state.form.classifications_target || 0}
+                onChange={this.updateForm.bind(this)}
+              />
+            </FormField>
+          </fieldset>
+        )}
         
         <StudentsList
           selectedClassroom={props.selectedClassroom}

@@ -105,7 +105,7 @@ class SubjectsList extends React.Component {
     return (
       <Box
         className="subjects-list"
-        margin="small"
+        margin={{ horizontal: "none", vertical: "small" }}
         pad="small"
       >
         <Heading tag="h3">{TEXT.HEADINGS.SUBJECTS}</Heading>
@@ -124,8 +124,10 @@ class SubjectsList extends React.Component {
               className="button"
               label={TEXT.ACTIONS.SELECT_SUBJECTS}
               onClick={() => {
-                //Save the return path
+                //Save the return path, assignment state, and the initial filters to be used by the map.
                 Actions.wildcamMap.setWccWcmAssignmentPath(props.location.pathname);
+                Actions.wildcamMap.setWccWcmSavedAssignmentState(props.assignmentStateForSaving);
+                if (props.filters) Actions.wildcamMap.setFilters(props.filters);
                 
                 //Transition to: WildCam Map
                 props.history.push(props.wccwcmMapPath);
@@ -152,7 +154,17 @@ class SubjectsList extends React.Component {
           return Object.keys(props.filters).map((key, index) => {
             const val = props.filters[key];
             return (
-              <div key={`subjects-list-filter_${index}`}>{key} : {val}</div>
+              <div key={`subjects-list-filter_${index}`}>{key} : {(()=>{
+                if (Array.isArray(val, index)) {
+                  let output = '';
+                  val.map((v) => {
+                    output += ((output !== '') ? ', ' : '' ) + v;
+                  });
+                  return output;
+                } else {
+                  return val;
+                }
+              })()}</div>
             );
           });
         })()}
@@ -198,6 +210,7 @@ class SubjectsList extends React.Component {
 SubjectsList.defaultProps = {
   filters: null,
   subjects: [],
+  assignmentStateForSaving: null,
   // ----------------
   ...WILDCAMCLASSROOMS_INITIAL_STATE,
   ...WILDCAMMAP_INITIAL_STATE,
@@ -206,6 +219,7 @@ SubjectsList.defaultProps = {
 SubjectsList.propTypes = {
   filters: PropTypes.object,
   subjects: PropTypes.array,
+  assignmentStateForSaving: PropTypes.object,
   // ----------------
   ...WILDCAMCLASSROOMS_PROPTYPES,
   ...WILDCAMMAP_PROPTYPES,
