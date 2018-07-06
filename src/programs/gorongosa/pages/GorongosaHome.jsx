@@ -19,13 +19,13 @@ import {
   PROGRAMS_INITIAL_STATE, PROGRAMS_PROPTYPES, PROGRAMS_STATUS
 } from '../../../ducks/programs';
 
-function DarienHome(props) {
+function GorongosaHome(props) {
   const signedIn = (props.user && props.initialised);
   const selectedProgramExists = (props.programsStatus === PROGRAMS_STATUS.SUCCESS && props.selectedProgram);
   const name = (selectedProgramExists && props.selectedProgram.name) ? props.selectedProgram.name : '';
 
   return (
-    <ProgramHome className="darien-home">
+    <ProgramHome className="gorongosa-home">
       <Hero
         className="program-home__hero"
         background={<Image src="https://placeimg.com/1000/1000/nature/any" fit="cover" />}
@@ -49,26 +49,26 @@ function DarienHome(props) {
             <Box pad="medium" size="medium">
               <Paragraph>If you are an educator, you can set up private classrooms and invite your students to join. Curate data sets or let your students explore on their own. Guided activities and supporting educational resources are also available. {(signedIn) ? null : '(Sign In required)'}</Paragraph>
               {(signedIn)
-                ? <Button type="button" className="button--secondary" path="/wildcam-darien-lab/educators/intro" label="Educator" />
+                ? <Button type="button" className="button--secondary" path="/wildcam-gorongosa-lab/educators/intro" label="Educator" />
                 : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label="Sign In" />
               }            
             </Box>
 
             <Box pad="medium" size="medium">
               <Paragraph> Alternatively, you can simply explore the data. As an explorer, you can view the camera data and study the distribution of animal species across both Darién National Park and Soberanía National Park.</Paragraph>
-              <Button type="button" className="button--secondary" path="/wildcam-darien-lab/map/" label="Explorer" />
+              <Button type="button" className="button--secondary" path="/wildcam-gorongosa-lab/map/" label="Explorer" />
             </Box>
           </Box>
         </Box>
       </Section>
       {/*
-      //WildCam Darien Lab's specific version of <NeedHelp />
+      //WildCam Gorongosa Lab's specific version of <NeedHelp />
       //----------------
       */}
       <Section className="home__section" align="center" colorIndex="accent-2">
         <Paragraph className="section__paragraph" align="center">
           Need help? Have questions?<br />
-          Check out the <Anchor href="https://www.zooniverse.org/projects/wildcam/wildcam-darien/talk/843">WildCam Darien Talk Board</Anchor> or <Anchor href="mailto:collab@zooniverse.org">email us</Anchor>
+          Check out the <Anchor href="https://www.zooniverse.org/projects/zooniverse/wildcam-gorongosa/talk/81">WildCam Gorongosa Talk Board</Anchor> or <Anchor href="mailto:collab@zooniverse.org">email us</Anchor>
         </Paragraph>
       </Section>
       {/*
@@ -78,13 +78,13 @@ function DarienHome(props) {
   );
 }
 
-DarienHome.propTypes = {
+GorongosaHome.propTypes = {
   ...PROGRAMS_PROPTYPES,
   initialised: PropTypes.bool,
   user: PropTypes.shape({ login: PropTypes.string })
 };
 
-DarienHome.defaultProps = {
+GorongosaHome.defaultProps = {
   ...PROGRAMS_INITIAL_STATE,
   initialised: false,
   user: null
@@ -99,4 +99,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(DarienHome);
+export default connect(mapStateToProps)(GorongosaHome);

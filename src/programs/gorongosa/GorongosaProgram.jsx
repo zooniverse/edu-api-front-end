@@ -1,8 +1,8 @@
 /*
-Darien Program
+Gorongosa Program
 --------------
 This container is the "main parent" that oversees/organises the rest of the
-components used by WildCam Darien Lab.
+components used by WildCam Gorongosa Lab.
 
 Currently, it has two concerns:
 - Only allow non-logged-in users access to certain parts of the Lab.
@@ -16,18 +16,18 @@ import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 import { Switch, Route } from 'react-router-dom';
 
-import DarienHome from './pages/DarienHome';
-import DarienEducators from './pages/DarienEducators';
-import DarienMap from './pages/DarienMap';
+import GorongosaHome from './pages/GorongosaHome';
+import GorongosaEducators from './pages/GorongosaEducators';
+import GorongosaMap from './pages/GorongosaMap';
 
-import DarienInfoEcology from './pages/info/DarienInfoEcology';
-import DarienEducatorsIntro from './pages/info/DarienEducatorsIntro';
+import GorongosaInfoEcology from './pages/info/GorongosaInfoEcology';
+import GorongosaEducatorsIntro from './pages/info/GorongosaEducatorsIntro';
 
 import Status401 from '../../components/common/Status401';
 import Status404 from '../../components/common/Status404';
 import GenericStatusPage from '../../components/common/GenericStatusPage';
 
-class DarienProgram extends React.Component {
+class GorongosaProgram extends React.Component {
   constructor() {
     super();
   }
@@ -49,22 +49,22 @@ class DarienProgram extends React.Component {
       if (props.user) {  //User logged in: give access to all locations.
         return (
           <Switch>
-            <Route exact path={`${props.match.url}/`} component={DarienHome} />
+            <Route exact path={`${props.match.url}/`} component={GorongosaHome} />
             
-            <Route exact path={`${props.match.url}/educators/ecology`} component={DarienInfoEcology} />
-            <Route exact path={`${props.match.url}/educators/intro`} component={DarienEducatorsIntro} />
+            <Route exact path={`${props.match.url}/educators/ecology`} component={GorongosaInfoEcology} />
+            <Route exact path={`${props.match.url}/educators/intro`} component={GorongosaEducatorsIntro} />
             
-            <Route path={`${props.match.url}/educators`} component={DarienEducators} />
-            <Route path={`${props.match.url}/map`} component={DarienMap} />
+            <Route path={`${props.match.url}/educators`} component={GorongosaEducators} />
+            <Route path={`${props.match.url}/map`} component={GorongosaMap} />
             <Route path="*" component={Status404} />
           </Switch>
         );
       } else {  //User not logged in: give limited access.
         return (
           <Switch>
-            <Route exact path={`${props.match.url}/`} component={DarienHome} />
+            <Route exact path={`${props.match.url}/`} component={GorongosaHome} />
             <Route path={`${props.match.url}/educators`} component={Status401} />
-            <Route path={`${props.match.url}/map`} component={DarienMap} />
+            <Route path={`${props.match.url}/map`} component={GorongosaMap} />
             <Route path="*" component={Status404} />
           </Switch>
         );
@@ -73,13 +73,13 @@ class DarienProgram extends React.Component {
   }
 }
 
-DarienProgram.propTypes = {
+GorongosaProgram.propTypes = {
   initialised: PropTypes.bool,
   user: PropTypes.shape({ login: PropTypes.string }),
   selectedProgram: PropTypes.object,
 };
 
-DarienProgram.defaultProps = {
+GorongosaProgram.defaultProps = {
   initialised: false,
   user: null,
   selectedProgram: null,
@@ -93,4 +93,4 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(DarienProgram);
+export default connect(mapStateToProps)(GorongosaProgram);
