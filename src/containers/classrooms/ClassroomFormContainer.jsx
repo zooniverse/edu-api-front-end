@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
+import createDOMPurify from 'dompurify';
 
 import ClassroomForm from '../../components/classrooms/ClassroomForm';
 import {
@@ -9,6 +10,8 @@ import {
 import {
   PROGRAMS_INITIAL_STATE, PROGRAMS_PROPTYPES
 } from '../../ducks/programs';
+
+const DOMPurify = createDOMPurify(window);
 
 export class ClassroomFormContainer extends React.Component {
   constructor(props) {
@@ -27,7 +30,8 @@ export class ClassroomFormContainer extends React.Component {
   }
 
   onChange(event) {
-    const fields = { ...this.props.formFields, [event.target.id]: event.target.value };
+    const sanitizedValue = DOMPurify(event.target.value)
+    const fields = { ...this.props.formFields, [event.target.id]: sanitizedValue };
     Actions.classrooms.updateFormFields(fields);
   }
 

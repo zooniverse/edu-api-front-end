@@ -28,6 +28,7 @@
     "browser-filesaver": "1.1.1",
     "classnames": "~2.2.5",
     "debounce": "~1.0.2",
+    "dompurify": "~1.0.7",
     "grommet": "~1.9.0",
     "jumpstate": "^2.2.2",
     "leaflet": "1.2.0",

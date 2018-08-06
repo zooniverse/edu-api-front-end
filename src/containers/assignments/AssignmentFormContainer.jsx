@@ -3,6 +3,9 @@ import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 
 import AssignmentForm from '../../components/assignments/AssignmentForm';
+import createDOMPurify from 'dompurify';
+const DOMPurify = createDOMPurify(window);
+
 import {
   ASSIGNMENTS_INITIAL_STATE, ASSIGNMENTS_PROPTYPES
 } from '../../ducks/assignments';
@@ -30,8 +33,9 @@ export class AssignmentFormContainer extends React.Component {
   }
 
   onChange(event) {
-    if (event.target && event.target.id && event.target.value) {
-      const fields = { ...this.props.formFields, [event.target.id]: event.target.value };
+    const sanitizedValue = DOMPurify(event.target.value)
+    if (event.target && event.target.id && sanitizedValue) {
+      const fields = { ...this.props.formFields, [event.target.id]: sanitizedValue };
       Actions.assignments.updateFormFields(fields);
     }
   }

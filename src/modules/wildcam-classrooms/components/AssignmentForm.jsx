@@ -49,6 +49,9 @@ import {
   WILDCAMCLASSROOMS_MAP_STATE,
 } from '../ducks/index.js';
 
+import createDOMPurify from 'dompurify';
+const DOMPurify = createDOMPurify(window);
+
 /*
 --------------------------------------------------------------------------------
  */
@@ -275,10 +278,11 @@ class AssignmentForm extends React.Component {
       val = Math.max(0, val);
     }
     
+    const sanitizedValue = DOMPurify(val)
     this.setState({
       form: {
         ...this.state.form,
-        [e.target.id]: val,
+        [e.target.id]: sanitizedValue,
       }
     });
     
