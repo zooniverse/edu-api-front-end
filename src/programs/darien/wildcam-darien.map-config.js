@@ -22,7 +22,59 @@ const mapConfig = {
     },
     'queries': {
       //For each camera, show how many (filtered) results are available.
-      'selectCameraCount': 'SELECT cam.*, COUNT(sbjagg.*) as count FROM cameras AS cam LEFT JOIN (SELECT sbj.camera, sbj.location, sbj.date, sbj.season, sbj.time_period, agg.data_choice, agg.subject_id FROM subjects AS sbj INNER JOIN aggregations AS agg ON sbj.subject_id = agg.subject_id) AS sbjagg ON cam.id = sbjagg.camera {WHERE} GROUP BY cam.cartodb_id ORDER BY count DESC',
+      'selectCameraCount': `
+        SELECT
+          cam.*, COUNT(sbjagg.*) as count
+        FROM
+          cameras AS cam
+        LEFT JOIN
+          (
+          SELECT
+            sbj.camera, sbj.location, sbj.date, sbj.season, sbj.time_period, agg.data_choice, agg.subject_id
+          FROM
+            subjects AS sbj
+          INNER JOIN
+             aggregations AS agg
+          ON
+             sbj.subject_id = agg.subject_id
+          ) AS sbjagg
+        ON
+          cam.id = sbjagg.camera
+        {WHERE}
+        GROUP BY
+          cam.id, human_type, dist_humans_m, dist_water_m, land_use, national_park, water_type, veg_type, longitude, latitude, the_geom, cam.cartodb_id
+        ORDER BY
+          count DESC
+        `,
+        /*  //Variant for dynamically flattening camera IDs, e.g. 'CP01a' -> 'CP01'. Technically not needed as flattening is now done during database setup instead of at runtime.
+        `SELECT
+          cam.*, COUNT(sbjagg.*) as count
+        FROM
+          (
+            SELECT
+              DISTINCT(REPLACE(REPLACE(id, 'a', ''), 'b', '')) AS id, human_type, dist_humans_m, dist_water_m, land_use, national_park, water_type, veg_type, longitude, latitude, the_geom
+            FROM
+              cameras
+            ) AS cam
+        LEFT JOIN
+          (
+          SELECT
+              DISTINCT(REPLACE(REPLACE(camera, 'a', ''), 'b', '')) AS camera, sbj.location, sbj.date, sbj.season, sbj.time_period, agg.data_choice, agg.subject_id
+            FROM
+              subjects AS sbj
+            INNER JOIN
+               aggregations AS agg
+            ON
+               sbj.subject_id = agg.subject_id
+            ) AS sbjagg
+        ON
+          cam.id = sbjagg.camera
+        {WHERE}
+        GROUP BY
+          cam.id, human_type, dist_humans_m, dist_water_m, land_use, national_park, water_type, veg_type, longitude, latitude, the_geom
+        ORDER BY
+          count DESC
+        `,*/
       
       //Get all the details for all the (filtered) results.
       'selectForDownload': 'SELECT cam.*, sbjagg.* FROM cameras AS cam INNER JOIN (SELECT sbj.camera, sbj.location, sbj.month, sbj.year, sbj.season, sbj.time_period, sbj.time, sbj.date, sbj.darien_id, agg.data_choice, agg.data_answers_howmany_1, agg.data_answers_howmany_2, agg.data_answers_howmany_3, agg.data_answers_howmany_4, agg.data_answers_howmany_5, agg.data_answers_howmany_6, agg.data_answers_howmany_7, agg.data_answers_howmany_8, agg.data_answers_howmany_9, agg.data_answers_howmany_10, agg.data_answers_howmany_1120, agg.data_answers_howmany_21 FROM subjects AS sbj INNER JOIN aggregations AS agg ON sbj.subject_id = agg.subject_id) AS sbjagg ON cam.id = sbjagg.camera {WHERE}',
@@ -105,26 +157,16 @@ const mapConfig = {
           let color = '#ccc';
           if (feature && feature.properties) {
             switch (feature.properties.veg_type) {
-              case 'Evergreen tropical ombrophilous broadleaf submontane (500 - 1,000 m Caribbean, 700 - 1,200 m Pacific)':
+              case 'Montane evergreen tropical forest':
                 color = '#9c3'; break;
-              case 'Production system with significant natural or spontaneous woody vegetation (10 - 50%)':
+              case 'Lowland evergreen tropical forest':
                 color = '#993'; break;
-              case 'Production system with significant natural or spontaneous woody vegetation (<10%)':
+              case 'Submontane evergreen tropical forest':
                 color = '#693'; break;
-              case 'Evergreen ombrophylous tropical lowland broadleaf forest - heavily logged':
-                color = '#663'; break;
-              case 'Tropical lowland semi-deciduous forest - heavily logged':
-                color = '#393'; break;
-              case 'Water region':
-                color = '#39c'; break;
-              case 'Tropical lowland semi-deciduous forest':
+              case 'Lowland semideciduous tropical forest':
                 color = '#9c6'; break;
-              case 'Tropical lowland semi-deciduous forest - minimally logged':
-                color = '#6c6'; break;
-              case 'Evergreen tropical ombrophilous broadleaf montane montane (1,000 - 1,500 m Caribbean, 1,200 - 1,800 m Pacific)':
-                color = '#cc6'; break;
-              case 'Evergreen, broad-leaved tropical broad-leaved evergreen forest':
-                color = '#9c9'; break;
+              case 'Water':
+                color = '#39c'; break;
             }
           }
           
@@ -140,16 +182,11 @@ const mapConfig = {
     'legend': {
       'type': 'simple',
       'items': {
-        '#9c3': 'Evergreen tropical ombrophilous broadleaf submontane (500 - 1,000 m Caribbean, 700 - 1,200 m Pacific)',
-        '#993': 'Production system with significant natural or spontaneous woody vegetation (10 - 50%)',
-        '#693': 'Production system with significant natural or spontaneous woody vegetation (<10%)',
-        '#663': 'Evergreen ombrophylous tropical lowland broadleaf forest - heavily logged',
-        '#393': 'Tropical lowland semi-deciduous forest - heavily logged',
-        '#39c': 'Water region',
-        '#9c6': 'Tropical lowland semi-deciduous forest',
-        '#6c6': 'Tropical lowland semi-deciduous forest - minimally logged',
-        '#cc6': 'Evergreen tropical ombrophilous broadleaf montane montane (1,000 - 1,500 m Caribbean, 1,200 - 1,800 m Pacific)',
-        '#9c9': 'Evergreen, broad-leaved tropical broad-leaved evergreen forest',
+        '#9c3': 'Montane evergreen tropical forest',
+        '#993': 'Lowland evergreen tropical forest',
+        '#693': 'Submontane evergreen tropical forest',
+        '#9c6': 'Lowland semideciduous tropical forest',
+        '#39c': 'Water'
       },
     },
     'filters': {
@@ -366,6 +403,10 @@ const mapConfig = {
           {
             'value': 'Lowland evergreen tropical forest',
             'label': 'Lowland evergreen tropical forest'
+          },
+          {
+            'value': 'Submontane evergreen tropical forest',
+            'label': 'Submontane evergreen tropical forest'
           }
         ]
       },
