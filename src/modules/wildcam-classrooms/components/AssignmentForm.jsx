@@ -114,7 +114,7 @@ class AssignmentForm extends React.Component {
       formInitialised: false,  //Has initialiseForm() already been run?
       filters: {},
       subjects: [],
-      students: [],
+      students: [],  //This is a list of IDs for students selected for this Assignment.
     };
   }
   
@@ -153,7 +153,6 @@ class AssignmentForm extends React.Component {
     
     //Data store update + Redundancy Check (prevent infinite loop, only trigger once)
     if (props.selectedClassroom !== selectedClassroom) {
-      //this.setState({ formInitialised: false });
       Actions.wildcamClassrooms.setSelectedClassroom(selectedClassroom);
     }
     
@@ -197,9 +196,16 @@ class AssignmentForm extends React.Component {
           const newFilters = (selectedAssignment.metadata)
             ? selectedAssignment.metadata.filters
             : {};
+          const newStudents = (selectedAssignment.relationships
+                               && selectedAssignment.relationships.student_users
+                               && selectedAssignment.relationships.student_users.data)
+            ? selectedAssignment.relationships.student_users.data.map(s => s.id)
+            : [];
+          
           this.setState({
             subjects: newSubjects,
             filters: newFilters,
+            students: newStudents,
           });
         }
         
@@ -226,7 +232,9 @@ class AssignmentForm extends React.Component {
     this.setState({ formInitialised: true });
     
     if (!selectedAssignment) {
-      this.setState({ form: INITIAL_FORM_DATA });
+      this.setState({
+        form: INITIAL_FORM_DATA,
+      });
     } else {
       const originalForm = INITIAL_FORM_DATA;
       const updatedForm = {};
@@ -240,7 +248,10 @@ class AssignmentForm extends React.Component {
           updatedForm[key] = originalForm[key];
         }
       });
-      this.setState({ form: updatedForm });
+      
+      this.setState({
+        form: updatedForm,
+      });
     }
     
     //WildCam Map Selected Subjects:
@@ -254,6 +265,7 @@ class AssignmentForm extends React.Component {
           ...this.state.form,
           ...props.wccwcmSavedAssignmentState,
           classifications_target: props.wccwcmSelectedSubjects.length,
+          //TODO: reload selected students
         }
       });
       Actions.wildcamMap.resetWccWcmAssignmentData();
@@ -298,20 +310,22 @@ class AssignmentForm extends React.Component {
     if (!props.selectedProgram) return;
     if (!props.selectedClassroom) return;
     
+    //Change state values into something the API likes.
+    const filters = (state.filters) ? state.filters : {};
+    const subjects = (state.subjects)
+      ? state.subjects.map(sub => sub.subject_id)
+      : [];
+    const students = (state.students) ? state.students : [];
+    
     //Submit Form: create new assignment
     if (state.view === VIEWS.CREATE_NEW) {
-      const filters = (state.filters) ? state.filters : {};
-      const subjects = (state.subjects)
-        ? state.subjects.map(sub => sub.subject_id)
-        : [];
-      
       return Actions.wcc_teachers_createAssignment({
         selectedProgram: props.selectedProgram,
         selectedClassroom: props.selectedClassroom,
         assignmentData: state.form,
         filters,
         subjects,
-        students: state.students,
+        students,
       })
       .then(() => {
         //Message
@@ -329,17 +343,12 @@ class AssignmentForm extends React.Component {
     
     //Submit Form: update existing classroom
     } else if (state.view === VIEWS.EDIT_EXISTING) {
-      const filters = (state.filters) ? state.filters : {};
-      const subjects = (state.subjects)
-        ? state.subjects.map(sub => sub.subject_id)
-        : [];
-      
-      return Actions.wcc_editAssignment({
+      return Actions.wcc_teachers_editAssignment({
         selectedAssignment: props.selectedAssignment,
         assignmentData: state.form,
         filters,
         subjects,
-        students: state.students,
+        students,
       }).then(() => {
         //Message
         Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_EDITED, status: 'ok' });
@@ -364,7 +373,7 @@ class AssignmentForm extends React.Component {
   render() {
     const props = this.props;
     const state = this.state;
-
+    
     //Get students and assignments only for this classroom.
     //const students = (props.selectedClassroom && props.selectedClassroom.students) ? props.selectedClassroom.students : [];
     //const assignments = (props.selectedClassroom && props.assignments && props.assignments[props.selectedClassroom.id])
@@ -504,10 +513,18 @@ class AssignmentForm extends React.Component {
         <StudentsList
           selectedClassroom={props.selectedClassroom}
           selectedAssignment={props.selectedAssignment}
-          doUpdateStudents={(updatedListOfStudents) => {
-            //TODO
-            alert('ALPHA: This feature is a work in progress.');
-            console.log('+++ Updated List of Students: ', updatedListOfStudents);
+          selectedStudents={state.students}
+          doSelectStudent={(studentId) => {
+            //When a student is selected, add/remove them from the list.
+            let updatedStudents = state.students.slice();
+            if (updatedStudents.indexOf(studentId) >= 0) {
+              updatedStudents = updatedStudents.filter((s) => s !== studentId)
+            } else {
+              updatedStudents.push(studentId);
+            }
+            this.setState({
+              students: updatedStudents
+            });
           }}
         />
 
@@ -543,7 +560,7 @@ class AssignmentForm extends React.Component {
                 icon={<CloseIcon size="small" />}
                 label={TEXT.ACTIONS.DELETE}
                 onClick={() => {
-                  return Actions.wcc_deleteAssignment(props.selectedAssignment)
+                  return Actions.wcc_teachers_deleteAssignment(props.selectedAssignment)
                   .then(() => {
                     //Message
                     Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_DELETED, status: 'ok' });
@@ -555,7 +572,7 @@ class AssignmentForm extends React.Component {
                       props.history && props.history.push('../');
                     });
                   }).catch((err) => {
-                    //Error messaging done in Actions.wcc_deleteAssignment()
+                    //Error messaging done in Actions.wcc_teachers_deleteAssignment()
                   });
                 }}
               />

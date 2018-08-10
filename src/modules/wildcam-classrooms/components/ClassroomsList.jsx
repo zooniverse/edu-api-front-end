@@ -17,7 +17,6 @@ import ScrollToTopOnMount from '../../../containers/common/ScrollToTopOnMount';
 
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
-import Label from 'grommet/components/Label';
 import Heading from 'grommet/components/Heading';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
@@ -43,7 +42,9 @@ const TEXT = {
 class ClassroomsList extends React.Component {
   constructor() {
     super();
-    
+  }
+  
+  componentDidMount() {
     //Initialise:
     //Set data to match view state
     Actions.wildcamClassrooms.resetSelectedClassroom();
@@ -54,9 +55,6 @@ class ClassroomsList extends React.Component {
   
   render() {
     const props = this.props;
-    
-    //Sanity check
-    if (!props.classroomsList) return null;
     
     return (
       <Box
@@ -80,6 +78,9 @@ class ClassroomsList extends React.Component {
   
   render_readyState() {
     const props = this.props;
+    
+    //Sanity check
+    if (!props.classroomsList) return null;
     
     return (
       <Box>

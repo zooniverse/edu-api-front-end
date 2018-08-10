@@ -275,7 +275,6 @@ Effect('wcc_teachers_fetchClassrooms', ({ selectedProgram }) => {
   });
 });
 
-  
 /*  Creates a classroom.
     
     API notes:
@@ -400,8 +399,79 @@ Effect('wcc_teachers_deleteClassroom', (selectedClassroom) => {
     Actions.wildcamClassrooms.setClassroomsStatusDetails(err);
     showErrorMessage(err);
     throw(err);
-  });
+  });  
+});
+
+/*  Deletes a student from a classroom.
+
+    API notes:
+      DELETE /teachers/classrooms/12345/student_users/67890
+ */
+Effect('wcc_teachers_deleteStudentFromClassroom', ({ studentId, selectedClassroom }) => {
+  //Sanity check
+  if (!selectedClassroom) return;
   
+  Actions.wildcamClassrooms.setClassroomsStatus(WILDCAMCLASSROOMS_DATA_STATUS.SENDING);  //WARNING: does this make sense to update Classrooms status?
+  
+  return httpDelete(`/teachers/classrooms/${selectedClassroom.id}/student_users/${studentId}`)
+  .then((response) => {
+    if (!response) { throw 'ERROR (ducks/wildcam-classrooms/ducks/wcc_teachers_deleteStudentFromClassroom): No response'; }
+    if (response.ok) {
+      return Actions.wildcamClassrooms.setClassroomsStatus(WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS);
+    }
+    throw 'ERROR (ducks/wildcam-classrooms/ducks/wcc_teachers_deleteStudentFromClassroom): Invalid response';
+  })
+  .catch((err) => {
+    Actions.wildcamClassrooms.setClassroomsStatus(WILDCAMCLASSROOMS_DATA_STATUS.ERROR);
+    Actions.wildcamClassrooms.setClassroomsStatusDetails(err);
+    showErrorMessage(err);
+    throw(err);
+  });  
+});
+
+/*
+--------------------------------------------------------------------------------
+ */
+
+/*  Fetch all the Classrooms for the selected Program from the Education API.
+    Implicit: the list of Classrooms is limited to what's available to the
+    logged-in user.
+    
+    API notes: 
+      GET /students/classrooms/?program_id=123
+ */
+Effect('wcc_students_fetchClassrooms', ({ selectedProgram }) => {
+  //Sanity check
+  if (!selectedProgram) return;
+  
+  const program_id = selectedProgram.id;
+  
+  Actions.wildcamClassrooms.resetClassrooms();
+  Actions.wildcamClassrooms.setClassroomsStatus(WILDCAMCLASSROOMS_DATA_STATUS.FETCHING);
+  
+  return get('/students/classrooms/', [{ program_id }])
+  
+  .then((response) => {
+    if (!response) { throw 'ERROR (wildcam-classrooms/ducks/wcc_students_fetchClassrooms): No response'; }
+    if (response.ok && response.body) {
+      return response.body;
+    }
+    throw 'ERROR (wildcam-classrooms/ducks/wcc_students_fetchClassrooms): Invalid response';
+  })
+  
+  .then((body) => {
+    Actions.wildcamClassrooms.setClassroomsStatus(WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS);
+    Actions.wildcamClassrooms.setClassroomsList(body.data);
+    Actions.wildcamClassrooms.setClassroomsStudents(body.included);
+    return body;
+  })
+  
+  .catch((err) => {
+    Actions.wildcamClassrooms.setClassroomsStatus(WILDCAMCLASSROOMS_DATA_STATUS.ERROR);
+    Actions.wildcamClassrooms.setClassroomsStatusDetails(err);
+    showErrorMessage(err);
+    throw(err);
+  });
 });
 
 /*
@@ -465,15 +535,22 @@ Effect('wcc_teachers_refreshData', ({ selectedProgram, selectedClassroom = null,
  */
 
 /*  Fetch all the Assignments (optionally: for the selected Classroom) from the
-    Education API. Implicit: the list of Assignments is limited to what's
-    available to the logged-in user.
+    Education API.
+    
+    Implicit: the list of Assignments is limited to what's available to the
+    logged-in user.
+    
+    NOTE: this fetches all assignments this user is a part of, whether they are
+    a teacher or a student!
     
     API notes: 
       GET /assignments/?classroom_id=123
  */
 Effect('wcc_fetchAssignments', ({ selectedClassroom }) => {
   //NOTE: if selectedClassroom isn't specified, this will pull a list of ALL
-  //Assignments belonging to the teacher. This may be useful?
+  //Assignments belonging to the user. This is useful in certain circumstances.
+  //However, do note that the argument needs to be an empty object, e.g.
+  //  `Actions.wcc_fetchAssignments({})`
   
   const classroom_id = (selectedClassroom) ? selectedClassroom.id : undefined;
   
@@ -645,7 +722,7 @@ Effect('wcc_teachers_createAssignment', ({ selectedProgram, selectedClassroom, a
           }
         }
  */
-Effect('wcc_editAssignment', ({ selectedAssignment, assignmentData, students = [], filters = {}, subjects = [] }) => {
+Effect('wcc_teachers_editAssignment', ({ selectedAssignment, assignmentData, students = [], filters = {}, subjects = [] }) => {
   //Sanity check
   if (!selectedAssignment || !assignmentData) return;
   
@@ -700,7 +777,7 @@ Effect('wcc_editAssignment', ({ selectedAssignment, assignmentData, students = [
     API notes:
       DELETE /assignments/12345
  */
-Effect('wcc_deleteAssignment', (selectedAssignment) => {
+Effect('wcc_teachers_deleteAssignment', (selectedAssignment) => {
   //Sanity check
   if (!selectedAssignment) return;
   
@@ -708,11 +785,11 @@ Effect('wcc_deleteAssignment', (selectedAssignment) => {
   
   return httpDelete(`/assignments/${selectedAssignment.id}`)
   .then((response) => {
-    if (!response) { throw 'ERROR (ducks/wildcam-classrooms/ducks/wcc_deleteAssignment): No response'; }
+    if (!response) { throw 'ERROR (ducks/wildcam-classrooms/ducks/wcc_teachers_deleteAssignment): No response'; }
     if (response.ok) {
       return Actions.wildcamClassrooms.setAssignmentsStatus(WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS);
     }
-    throw 'ERROR (ducks/wildcam-classrooms/ducks/wcc_deleteAssignment): Invalid response';
+    throw 'ERROR (ducks/wildcam-classrooms/ducks/wcc_teachers_deleteAssignment): Invalid response';
   })
   .catch((err) => {
     Actions.wildcamClassrooms.setAssignmentsStatus(WILDCAMCLASSROOMS_DATA_STATUS.ERROR);
