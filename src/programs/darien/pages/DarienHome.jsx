@@ -45,11 +45,19 @@ function DarienHome(props) {
       >
         <Box align="center" direction="column">
           <Paragraph size="large">Investigate ecological questions by exploring trail camera data using an interactive map. Filter and download data to perform analyses and test hypotheses.</Paragraph>
-          <Box align="end" direction="row">
+          <Box align="end" direction="row" justify="center" wrap={true}>
             <Box pad="medium" size="medium">
               <Paragraph>If you are an educator, you can set up private classrooms and invite your students to join. Curate data sets or let your students explore on their own. Guided activities and supporting educational resources are also available. {(signedIn) ? null : '(Sign In required)'}</Paragraph>
               {(signedIn)
                 ? <Button type="button" className="button--secondary" path="/wildcam-darien-lab/educators/intro" label="Educator" />
+                : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label="Sign In" />
+              }            
+            </Box>
+            
+            <Box pad="medium" size="medium">
+              <Paragraph>If you are a student, you can work on assignments you've been given. {(signedIn) ? null : '(Sign In required)'}</Paragraph>
+              {(signedIn)
+                ? <Button type="button" className="button--secondary" path="/wildcam-darien-lab/students" label="Student" />
                 : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label="Sign In" />
               }            
             </Box>
@@ -68,7 +76,7 @@ function DarienHome(props) {
       <Section className="home__section" align="center" colorIndex="accent-2">
         <Paragraph className="section__paragraph" align="center">
           Need help? Have questions?<br />
-          Check out the <Anchor href="https://www.zooniverse.org/projects/wildcam/wildcam-darien/talk/843">WildCam Darien Talk Board</Anchor> or <Anchor href="mailto:collab@zooniverse.org">email us</Anchor>
+          Check out the <Anchor href="https://www.zooniverse.org/projects/wildcam/wildcam-darien/talk/843">WildCam Darién Talk Board</Anchor> or <Anchor href="mailto:collab@zooniverse.org">email us</Anchor>
         </Paragraph>
       </Section>
       {/*

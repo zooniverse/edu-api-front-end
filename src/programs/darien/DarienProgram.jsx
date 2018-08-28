@@ -21,8 +21,10 @@ import DarienEducators from './pages/DarienEducators';
 import DarienStudents from './pages/DarienStudents';
 import DarienMap from './pages/DarienMap';
 
-import DarienInfoEcology from './pages/info/DarienInfoEcology';
 import DarienEducatorsIntro from './pages/info/DarienEducatorsIntro';
+import DarienInfoCSV from './pages/info/DarienInfoCSV';
+import DarienInfoEcology from './pages/info/DarienInfoEcology';
+import DarienInfoResources from './pages/info/DarienInfoResources';
 
 import Status401 from '../../components/common/Status401';
 import Status404 from '../../components/common/Status404';
@@ -52,12 +54,15 @@ class DarienProgram extends React.Component {
           <Switch>
             <Route exact path={`${props.match.url}/`} component={DarienHome} />
             
-            <Route exact path={`${props.match.url}/educators/ecology`} component={DarienInfoEcology} />
             <Route exact path={`${props.match.url}/educators/intro`} component={DarienEducatorsIntro} />
-            
             <Route path={`${props.match.url}/educators`} component={DarienEducators} />
             <Route path={`${props.match.url}/students`} component={DarienStudents} />
+
             <Route path={`${props.match.url}/map`} component={DarienMap} />
+            <Route exact path={`${props.match.url}/info/data-guide`} component={DarienInfoCSV} />
+            <Route exact path={`${props.match.url}/info/ecology`} component={DarienInfoEcology} />
+            <Route exact path={`${props.match.url}/info/resources`} component={DarienInfoResources} />
+            
             <Route path="*" component={Status404} />
           </Switch>
         );
@@ -65,8 +70,15 @@ class DarienProgram extends React.Component {
         return (
           <Switch>
             <Route exact path={`${props.match.url}/`} component={DarienHome} />
+            
             <Route path={`${props.match.url}/educators`} component={Status401} />
+            <Route path={`${props.match.url}/students`} component={Status401} />
+            
             <Route path={`${props.match.url}/map`} component={DarienMap} />
+            <Route exact path={`${props.match.url}/info/data-guide`} component={DarienInfoCSV} />
+            <Route exact path={`${props.match.url}/info/ecology`} component={DarienInfoEcology} />
+            <Route exact path={`${props.match.url}/info/resources`} component={DarienInfoResources} />
+            
             <Route path="*" component={Status404} />
           </Switch>
         );
