@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
 
+import { TEXT } from '../text.js'
 import { config } from '../../../lib/config';
 
 import StatusWorking from './StatusWorking';
@@ -33,9 +34,10 @@ import ListItem from 'grommet/components/ListItem';
 import TextInput from 'grommet/components/TextInput';
 import NumberInput from 'grommet/components/NumberInput';
 
+import CloseIcon from 'grommet/components/icons/base/Close';
+import HelpIcon from 'grommet/components/icons/base/Help';
 import LinkPreviousIcon from 'grommet/components/icons/base/LinkPrevious';
 import LinkNextIcon from 'grommet/components/icons/base/LinkNext';
-import CloseIcon from 'grommet/components/icons/base/Close';
 
 import { PROGRAMS_PROPTYPES, PROGRAMS_INITIAL_STATE } from '../../../ducks/programs';
 import {
@@ -57,41 +59,6 @@ const VIEWS = {
   CREATE_NEW: 'create',
   EDIT_EXISTING: 'edit',
   NOT_FOUND: 'not found',
-}
-
-const TEXT = {
-  ACTIONS: {
-    BACK: 'Back',
-    SUBMIT: 'Submit',
-    CREATE: 'Create',
-    UPDATE: 'Update',
-    DELETE: 'Delete',
-    EDIT: 'Edit',
-  },
-  WORKING: 'Working...',
-  JOIN_URL: 'Join URL',
-  HEADINGS: {
-    ASSIGNMENT: 'Assignment',
-    CREATE_NEW_ASSIGNMENT: 'Create new assignment',
-    EDIT_ASSIGNMENT: 'Edit assignment',
-  },
-  ASSIGNMENT_FORM: {
-    NAME: 'Assignment name',
-    DESCRIPTION: 'Instructions for students',
-    CLASSIFICATIONS_TARGET: 'Number of subjects each student needs to classify',
-    DUEDATE: 'Due date',
-  },
-  ASSIGNMENT_FORM_PLACEHOLDERS: {
-    DUEDATE: 'e.g. 2020-12-31',
-  },
-  ERROR: {
-    GENERAL: 'Something went wrong',
-  },
-  SUCCESS: {
-    ASSIGNMENT_CREATED: 'Assignment created',
-    ASSIGNMENT_EDITED: 'Changes saved',
-    ASSIGNMENT_DELETED: 'Assignment deleted',
-  },
 };
 
 const INITIAL_FORM_DATA = {
@@ -329,7 +296,7 @@ class AssignmentForm extends React.Component {
       })
       .then(() => {
         //Message
-        Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_CREATED, status: 'ok' });
+        Actions.wildcamClassrooms.setToast({ message: TEXT.STATUS.SUCCESSES.ASSIGNMENT_CREATED, status: 'ok' });
         
         //Refresh
         return Actions.wcc_teachers_refreshData({ selectedProgram: props.selectedProgram })
@@ -351,7 +318,7 @@ class AssignmentForm extends React.Component {
         students,
       }).then(() => {
         //Message
-        Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_EDITED, status: 'ok' });
+        Actions.wildcamClassrooms.setToast({ message: TEXT.STATUS.SUCCESSES.ASSIGNMENT_EDITED, status: 'ok' });
         
         //Refresh
         return Actions.wcc_teachers_refreshData({
@@ -443,8 +410,8 @@ class AssignmentForm extends React.Component {
         <Heading tag="h2">
           {(() => {
             switch (state.view) {
-              case VIEWS.CREATE_NEW: return TEXT.HEADINGS.CREATE_NEW_ASSIGNMENT;
-              case VIEWS.EDIT_EXISTING: return TEXT.HEADINGS.EDIT_ASSIGNMENT;
+              case VIEWS.CREATE_NEW: return TEXT.TITLES.CREATE_NEW_ASSIGNMENT;
+              case VIEWS.EDIT_EXISTING: return TEXT.TITLES.EDIT_ASSIGNMENT;
               default: return '???';  //This should never trigger
             }
           })()}
@@ -540,6 +507,16 @@ class AssignmentForm extends React.Component {
               props.history && props.history.push('../');
             }}
           />
+          
+          <Button
+            className="button"
+            icon={<HelpIcon />}
+            label={TEXT.ACTIONS.HELP}
+            onClick={() => {
+              Actions.wildcamClassrooms.showHelp('assignments-management');
+            }}
+          />
+          
           <Button
             className="button"
             icon={<LinkNextIcon size="small" />}
@@ -563,7 +540,7 @@ class AssignmentForm extends React.Component {
                   return Actions.wcc_teachers_deleteAssignment(props.selectedAssignment)
                   .then(() => {
                     //Message
-                    Actions.wildcamClassrooms.setToast({ message: TEXT.SUCCESS.ASSIGNMENT_DELETED, status: 'ok' });
+                    Actions.wildcamClassrooms.setToast({ message: TEXT.STATUS.SUCCESSES.ASSIGNMENT_DELETED, status: 'ok' });
                     
                     //Refresh
                     return Actions.wcc_teachers_refreshData({ selectedProgram: props.selectedProgram, selectedClassroom: props.selectedClassroom })

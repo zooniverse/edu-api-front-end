@@ -11,6 +11,7 @@ import { State, Effect, Actions } from 'jumpstate';
 import PropTypes from 'prop-types';
 //import superagent from 'superagent';
 import { get, post, put, httpDelete } from '../../../lib/edu-api';
+import { TEXT } from '../text.js'
 
 /*
 --------------------------------------------------------------------------------
@@ -32,12 +33,6 @@ const WILDCAMCLASSROOMS_DATA_STATUS = {
   SENDING: 'sending',  //Updating classrooms/assignments...
   SUCCESS: 'success',  //SUCCESS! ...of whatever we just did.
   ERROR: 'error',  //Something effed up.
-};
-
-const TEXT = {
-  ERROR: {
-    GENERAL: 'Something went wrong',
-  }
 };
 
 /*
@@ -65,12 +60,14 @@ const WILDCAMCLASSROOMS_INITIAL_STATE = {
   assignmentsStatus: WILDCAMCLASSROOMS_DATA_STATUS.IDLE,  //The status of the data fetch/send.
   assignmentsStatusDetails: null,
   assignmentsList: [],
+  assignmentsAuxData: [],  //Auxilliary data from assignments.included.
   selectedAssignment: null,
   
   toast: {
     message: null,
     status: null,
   },
+  showHelp: null,  //If set to a valid string value, shows the help/tutoria/guide for the specified activity.
 };
 
 /*
@@ -99,9 +96,11 @@ const WILDCAMCLASSROOMS_PROPTYPES = {
   assignmentsStatus: PropTypes.string,
   assignmentsStatusDetails: PropTypes.object,
   assignmentsList: PropTypes.array,
+  assignmentsAuxData: PropTypes.array,
   selectedAssignment: PropTypes.object,
   
   toast: PropTypes.object,
+  showHelp: PropTypes.string,
 };
 
 /*  WILDCAMCLASSROOMS_MAP_STATE is used as a convenience feature in
@@ -145,6 +144,7 @@ const resetClassrooms = (state) => {
     assignmentsStatus: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsStatus,
     assignmentsStatusDetails: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsStatusDetails,
     assignmentsList: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsList,
+    assignmentsAuxData: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsAuxData,
     selectedAssignment: WILDCAMCLASSROOMS_INITIAL_STATE.selectedAssignment,
   };
 };
@@ -184,6 +184,7 @@ const resetAssignments = (state) => {
     assignmentsStatus: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsStatus,
     assignmentsStatusDetails: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsStatusDetails,
     assignmentsList: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsList,
+    assignmentsAuxData: WILDCAMCLASSROOMS_INITIAL_STATE.assignmentsAuxData,
     selectedAssignment: WILDCAMCLASSROOMS_INITIAL_STATE.selectedAssignment,
   };
 };
@@ -198,6 +199,10 @@ const setAssignmentsStatusDetails = (state, assignmentsStatusDetails) => {
 
 const setAssignmentsList = (state, assignmentsList) => {
   return { ...state, assignmentsList };
+};
+
+const setAssignmentsAuxData = (state, assignmentsAuxData) => {
+  return { ...state, assignmentsAuxData };
 };
 
 const setSelectedAssignment = (state, selectedAssignment) => {
@@ -223,6 +228,15 @@ const resetToast = (state) => {
     ...state,
     toast: { message: null, status: null },
   };
+};
+
+/*  Shows or Hides help for the respective activity.
+ */
+const showHelp = (state, activity) => {
+  return { ...state, showHelp: activity };
+};
+const hideHelp = (state) => {
+  return { ...state, showHelp: null };
 };
 
 /*
@@ -570,6 +584,7 @@ Effect('wcc_fetchAssignments', ({ selectedClassroom }) => {
   .then((body) => {
     Actions.wildcamClassrooms.setAssignmentsStatus(WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS);
     Actions.wildcamClassrooms.setAssignmentsList(body.data);
+    Actions.wildcamClassrooms.setAssignmentsAuxData(body.included);
     return body;
   })
   
@@ -805,7 +820,7 @@ Effect('wcc_teachers_deleteAssignment', (selectedAssignment) => {
 
 function showErrorMessage(err) {
   //Critical Error
-  Actions.notification.setNotification({ status: 'critical', message: TEXT.ERROR.GENERAL });
+  Actions.notification.setNotification({ status: 'critical', message: TEXT.STATUS.ERRORS.GENERAL });
   console.error(err);
 }
 
@@ -828,10 +843,13 @@ const wildcamClassrooms = State('wildcamClassrooms', {
   setAssignmentsStatus,
   setAssignmentsStatusDetails,
   setAssignmentsList,
+  setAssignmentsAuxData,
   setSelectedAssignment,
   resetSelectedAssignment,
   setToast,
   resetToast,
+  showHelp,
+  hideHelp,
 });
 
 export default wildcamClassrooms;

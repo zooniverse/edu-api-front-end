@@ -9,6 +9,9 @@ Renders a list of assignments.
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Actions } from 'jumpstate';
+
+import { TEXT } from '../text.js';
 
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
@@ -19,6 +22,8 @@ import Heading from 'grommet/components/Heading';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
 
+import AddIcon from 'grommet/components/icons/base/Add';
+import HelpIcon from 'grommet/components/icons/base/Help';
 import LinkNextIcon from 'grommet/components/icons/base/LinkNext';
 
 import {
@@ -29,20 +34,6 @@ import {
   WILDCAMCLASSROOMS_MAP_STATE,
 } from '../ducks/index.js';
 
-/*
---------------------------------------------------------------------------------
- */
-
-const TEXT = {
-  HEADINGS: {
-    ASSIGNMENTS: 'Assignments',
-  },
-  ACTIONS: {
-    EDIT: 'Edit',
-    CREATE_NEW_ASSIGNMENT: 'Create new assignment',
-  },
-}
-  
 /*
 --------------------------------------------------------------------------------
  */
@@ -74,7 +65,7 @@ class AssignmentsList extends React.Component {
         margin="small"
         pad="small"
       >
-        <Heading tag="h3">{TEXT.HEADINGS.ASSIGNMENTS}</Heading>
+        <Heading tag="h3">{TEXT.TITLES.ASSIGNMENTS}</Heading>
         <Table className="table">
           <tbody>
             {assignments.map((assignment) => {
@@ -108,9 +99,24 @@ class AssignmentsList extends React.Component {
             })}
           </tbody>
         </Table>
-        <Footer>
+        <Footer
+          className="actions-panel"
+          direction="row"
+          justify="end"
+          pad="medium"
+        >
           <Button
             className="button"
+            icon={<HelpIcon />}
+            label={TEXT.ACTIONS.HELP}
+            onClick={() => {
+              Actions.wildcamClassrooms.showHelp('assignments-management');
+            }}
+          />
+          
+          <Button
+            className="button"
+            icon={<AddIcon size="small" />}
             label={TEXT.ACTIONS.CREATE_NEW_ASSIGNMENT}
             onClick={() => {
               //Transition to: Create New Assignment
