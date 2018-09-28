@@ -11,6 +11,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Actions } from 'jumpstate';
+import CopyToClipboard from 'react-copy-to-clipboard';
 
 import { config } from '../../../lib/config';
 import { TEXT } from '../text.js';
@@ -34,6 +35,7 @@ import ListItem from 'grommet/components/ListItem';
 import TextInput from 'grommet/components/TextInput';
 
 import CloseIcon from 'grommet/components/icons/base/Close';
+import CopyIcon from 'grommet/components/icons/base/Copy';
 import HelpIcon from 'grommet/components/icons/base/Help';
 import LinkPreviousIcon from 'grommet/components/icons/base/LinkPrevious';
 import LinkNextIcon from 'grommet/components/icons/base/LinkNext';
@@ -61,7 +63,7 @@ const VIEWS = {
 const INITIAL_FORM_DATA = {
   name: '',
   subject: '',
-  school: '',
+  school: '',  //Not used
   description: '',  //Not used
 };
 
@@ -314,15 +316,22 @@ class ClassroomForm extends React.Component {
               <span>{props.selectedClassroom.subject}</span>
             </ListItem>
           ) : null}
-          {(props.selectedClassroom.school) ? (
-            <ListItem pad="small" separator="none">
-              <Label>{TEXT.CLASSROOM_FORM.SCHOOL}</Label>
-              <span>{props.selectedClassroom.school}</span>
-            </ListItem>
-          ) : null}
           <ListItem pad="small" separator="none">
             <Label>{TEXT.LABELS.JOIN_URL}</Label>
-            <span>{joinURL}</span>
+            <span>
+              {joinURL}
+              <CopyToClipboard
+                text={joinURL}
+                onCopy={() => { Actions.wildcamClassrooms.setToast({ status: 'ok', message: TEXT.STATUS.SUCCESSES.COPIED_TO_CLIPBOARD }); }}>
+                <Button
+                  type="button"
+                  className="button"
+                  icon={<CopyIcon size="small" />}
+                  plain={true}
+                  onClick={() => {}}
+                />
+              </CopyToClipboard>
+            </span>
           </ListItem>
         </List>
 
@@ -430,15 +439,20 @@ class ClassroomForm extends React.Component {
           </FormField>
         </fieldset>
 
-        <fieldset>
-          <FormField htmlFor="school" label={TEXT.CLASSROOM_FORM.SCHOOL}>
-            <TextInput
-              id="school"
-              value={this.state.form.school}
-              onDOMChange={this.updateForm.bind(this)}
-            />
-          </FormField>
-        </fieldset>
+        {
+        //Removed at the request of HHMI
+        //--------
+        //<fieldset>
+        //  <FormField htmlFor="school" label={TEXT.CLASSROOM_FORM.SCHOOL}>
+        //    <TextInput
+        //      id="school"
+        //      value={this.state.form.school}
+        //      onDOMChange={this.updateForm.bind(this)}
+        //    />
+        //  </FormField>
+        //</fieldset>
+        //--------
+        }
 
         {
         //Removed at the request of HHMI, based on teacher feedback

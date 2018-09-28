@@ -9,6 +9,7 @@ const TEXT_EN = {
     YOUR_ASSIGNMENTS: 'Your Assignments',
     STUDENTS: 'Students',
     SUBJECTS: 'Photos',
+    LIST_OF_CLASSROOMS: 'List of Classrooms',
   },
   ACTIONS: {
     BACK: 'Back',  //Go back to the previous page.
@@ -20,10 +21,13 @@ const TEXT_EN = {
     HELP: 'Help',  //Generic "help" action, for How Tos, Guides, Instructions, etc.
     NEXT: 'Next',  //Generic "next" action, e.g. to go to the next step in a tutorial.
     PREVIOUS: 'Previous',  //Generic "previous" action, e.g. to go to the previous step in a tutorial.
+    SELECT_ALL: 'Select all',  //Generic "select all" action, e.g. for a list of students.
     SELECT_SUBJECTS: 'Select photos',
+    SELECT_SUBJECTS_AGAIN: 'Change photo selection',
     START_ASSIGNMENT: 'Start assignment',
     SIGN_IN: 'Sign in',
     SUBMIT: 'Submit',  //Generic "submit form" action.
+    UNSELECT_ALL: 'Unselect all',  //Generic "unselect all" action, e.g. for a list of students.
     UPDATE: 'Update',  //Generic "update item" action.
     UPDATE_STUDENTS: 'Update students',
     VIEW: 'View',  //Generic "view item" action.
@@ -37,6 +41,7 @@ const TEXT_EN = {
       ASSIGNMENT_CREATED: 'Assignment created',
       ASSIGNMENT_EDITED: 'Changes saved',
       ASSIGNMENT_DELETED: 'Assignment deleted',
+      COPIED_TO_CLIPBOARD: 'Copied to clipboard',
     },
     ERRORS: {
       GENERAL: 'Something went wrong',
@@ -53,6 +58,8 @@ const TEXT_EN = {
     EXPLORER: 'Explorer',
     EXPLORERS: 'Explorers',
     SIGN_IN_REQUIRED: 'Sign in required',
+    PHOTOS_SELECTED: 'photo(s) selected',
+    PROGRESS: 'Progress',
   },
   CLASSROOM_FORM: {
     NAME: 'Classroom name',
@@ -67,7 +74,7 @@ const TEXT_EN = {
     DUEDATE: 'Due date',
   },
   ASSIGNMENT_FORM_PLACEHOLDERS: {
-    DUEDATE: 'e.g. 2020-12-31',
+    DUEDATE: 'e.g. 12-31-2020',
   },
 };
 
