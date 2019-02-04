@@ -63,33 +63,33 @@ function DarienHome(props) {
                   ? 'If you are an educator, you can set up private classrooms and invite your students to join. Curate data sets or let your students explore on their own. Guided activities and supporting educational resources are also available.'
                   : 'Si eres un educador, puedes configurar aulas privadas e invitar a tus alumnos a unirse. Cura los conjuntos de datos o deja que tus alumnos lo exploren solos. Actividades dirigidas y recursos educativos de apoyo también están disponibles.'
                 }
-                {(signedIn) ? null : `(${TEXT.LABELS.SIGN_IN_REQUIRED})`}
+                {(signedIn) ? null : ` (${TEXT.LABELS.SIGN_IN_REQUIRED}) `}
               </Paragraph>
               {(signedIn)
                 ? <Button type="button" className="button--secondary" path="/wildcam-darien-lab/educators/intro" label={TEXT.LABELS.EDUCATOR} />
-                : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label={TEXT.ACTIONS.SIGN_IN} />
+                : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label={TEXT.LABELS.EDUCATOR} />
               }            
             </Box>
             
             <Box pad="medium" size="medium">
               <Paragraph>
                 {(lang !== 'es')
-                  ? 'If you are a student, you can work on assignments you\'ve been given.'
-                  : 'Si eres un estudiante, puedes trabajar en las tareas que te han asignado.'
+                  ? 'If you are a student, you can explore and download the trail camera data, and work on assignments you have been given.'
+                  : 'Si eres un estudiante, puedes explorar y descargar los datos de la cámara del camino y trabajar en las tareas que te han sido asignadas.'
                 }
-                {(signedIn) ? null : `(${TEXT.LABELS.SIGN_IN_REQUIRED})`}
+                {(signedIn) ? null : ` (${TEXT.LABELS.SIGN_IN_REQUIRED}) `}
               </Paragraph>
               {(signedIn)
                 ? <Button type="button" className="button--secondary" path="/wildcam-darien-lab/students/intro" label={TEXT.LABELS.STUDENT} />
-                : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label={TEXT.ACTIONS.SIGN_IN} />
+                : <Button type="button" className="button--secondary" onClick={Actions.auth.toggleOauthModal} label={TEXT.LABELS.EDUCATOR} />
               }            
             </Box>
 
             <Box pad="medium" size="medium">
               <Paragraph>
                 {(lang !== 'es')
-                  ? 'Alternatively, you can simply explore the data. As an explorer, you can view the camera data and study the distribution of animal species across both Darién National Park and Soberanía National Park.'
-                  : 'Alternativamente, puedes simplemente explorar los datos. Como explorador, puede ver los datos de la cámara y estudiar la distribución de especies animales a través del Parque Nacional Darién y el Parque Nacional Soberanía.'
+                  ? 'If you simply want to explore the data, enter as an explorer. You can use an interactive map to view and analyze the trail camera data from Darién and Soberanía National Parks.'
+                  : 'Si simplemente desea explorar los datos, ingrese como explorador. Puede usar un mapa interactivo para ver y analizar los datos de la cámara del sendero de los Parques Nacionales Darién y Soberanía.'
                 }
               </Paragraph>
               <Button type="button" className="button--secondary" path="/wildcam-darien-lab/explorers/map/" label={TEXT.LABELS.EXPLORER} />

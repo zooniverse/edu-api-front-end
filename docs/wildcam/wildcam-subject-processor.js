@@ -83,6 +83,7 @@ function parseSubjectsCsv(rawText, program) {
   //  }
   
   //Program objects are of course SPECIFIC to a certain Education Program.
+  let validWorkflowIDs = [''];
   
   switch (program) {
     case "darien":
@@ -106,6 +107,9 @@ function parseSubjectsCsv(rawText, program) {
         //'metadata': i => i.metadata || '',
         //'retired_at': i => i.retired_at || '',
       }
+      
+      validWorkflowIDs = ['3033', '']
+      
       break;
   }
   //----------------------------------------------------------------
@@ -138,8 +142,13 @@ function parseSubjectsCsv(rawText, program) {
       return programObject[key](inputObject);
     });
     
+    //Filter: only allow valid workflow IDs.
+    var workflow_id = programObject['workflow_id'](inputObject);
+    if (validWorkflowIDs.includes(workflow_id)) {
+      csvOutputRows.push(outputRow);
+    }
+    
     //Done.
-    csvOutputRows.push(outputRow);
   }
   //----------------------------------------------------------------
   

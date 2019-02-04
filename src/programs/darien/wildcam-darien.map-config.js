@@ -12,6 +12,8 @@ Requires:
 ********************************************************************************
  */
 
+import { ZooTran } from '../../lib/zooniversal-translator.js';
+
 const mapConfig = {
   //Connection details for the external data source.
   'database': {
@@ -508,7 +510,69 @@ const mapConfig = {
   //Misc stuff related to the program
   'program': {
     dataGuideURL: '/#/wildcam-darien-lab/explorers/data-guide/',
+    transformDownloadData: function (csvData) {
+      if (csvData && csvData.data && csvData.data.length > 0 && csvData.errors.length === 0) {
+        return Promise.resolve(transformDarienDownloadData(csvData));
+      }
+
+      if (csvData && csvData.errors.length > 0) {
+        return Promise.reject(csvData.errors[0].message);
+      }
+
+      return Promise.resolve(null);      
+    }
   },
 };
 
 export default mapConfig;
+
+/*  WildCam Darien data exports need to 1. be translated to the proper language, and 2. need to have a 'Consensus Count' field added.
+ */
+function transformDarienDownloadData(csvData) {
+  let output = '';
+  const header = csvData.data[0].slice();
+  header.push('consensus_count');  //Append consensus count to the final column of each row.
+  
+  const headerLookup = {};
+  header.forEach((item, index) => {
+    if (item.startsWith('data_answers_howmany_')) headerLookup[item] = index;
+  }); 
+  
+  output = header.map(str => csvStr(str)).join(',') + '\n';
+  
+  for (let i = 1; i < csvData.data.length; i ++) {
+    let row = csvData.data[i];
+    
+    if (row.join().length === 0) continue
+    
+    let consensusCount = undefined;
+    let numberForConsensus = 0;
+    
+    //Which "animal was seen X times in this photo" has the highest count?    
+    Object.keys(headerLookup).forEach((key) => {
+      const index = headerLookup[key];
+      const currentNumber = row[index];
+      if (!consensusCount || numberForConsensus < currentNumber) {
+        numberForConsensus = currentNumber;
+        consensusCount = key.replace('data_answers_howmany_', '');
+        if (consensusCount === '1120') consensusCount = '11-20';
+        if (consensusCount === '21') consensusCount = '21+';
+      }
+    });
+    
+    
+    if (!consensusCount) {
+      row.push('-')
+    } else {
+      row.push(consensusCount)
+    }
+    
+    output += row.map(str => csvStr(str)).join(',') + '\n';
+  }
+  
+  return output;
+}
+
+function csvStr(str) {
+  return '"' + ZooTran(str).replace(/"/g, '""') + '"';
+}

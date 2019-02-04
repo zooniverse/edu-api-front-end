@@ -5,6 +5,9 @@ let SpanishTranslations = {
   'Loading...': 'Cargarse...',
   'Filters': 'Filtros',
   
+  //For 
+  'Select photos by choosing filters, then edit the number of photos to be identified and click "Select"': 'Seleccione las fotos eligiendo los filtros, luego edite la cantidad de fotos a identificar y haga clic en "Select"',
+  
   //SuperDownloadButton
   'Success: file downloaded.': 'Éxito: archivo descargado.',
   'Error: could not download the file.': 'Error: no se pudo descargar el archivo.',
@@ -62,18 +65,19 @@ let SpanishTranslations = {
   'date': 'Fecha',
   'darien_id': null,
   'data_choice': 'Especies',
-  'data_answers_howmany_1': 'Count 1',
-  'data_answers_howmany_2': 'Count 2',
-  'data_answers_howmany_3': 'Count 3',
-  'data_answers_howmany_4': 'Count 4',
-  'data_answers_howmany_5': 'Count 5',
-  'data_answers_howmany_6': 'Count 6',
-  'data_answers_howmany_7': 'Count 7',
-  'data_answers_howmany_8': 'Count 8',
-  'data_answers_howmany_9': 'Count 9',
-  'data_answers_howmany_10': 'Count 10',
-  'data_answers_howmany_1120': 'Count 11-20',
-  'data_answers_howmany_21': 'Count 21+',
+  'data_answers_howmany_1': 'Número de personas que vieron 1 animal',
+  'data_answers_howmany_2': 'Número de personas que vieron 2 animales',
+  'data_answers_howmany_3': 'Número de personas que vieron 3 animales',
+  'data_answers_howmany_4': 'Número de personas que vieron 4 animales',
+  'data_answers_howmany_5': 'Número de personas que vieron 5 animales',
+  'data_answers_howmany_6': 'Número de personas que vieron 6 animales',
+  'data_answers_howmany_7': 'Número de personas que vieron 7 animales',
+  'data_answers_howmany_8': 'Número de personas que vieron 8 animales',
+  'data_answers_howmany_9': 'Número de personas que vieron 9 animales',
+  'data_answers_howmany_10': 'Número de personas que vieron 10 animales',
+  'data_answers_howmany_1120': 'Número de personas que vieron 11-20 animales',
+  'data_answers_howmany_21': 'Número de personas que vieron 21+ animales',
+  'consensus_count': 'Número de animales (consenso)',
   
   //wildcam-darien.mapConfig
   'Species': 'Especies',  

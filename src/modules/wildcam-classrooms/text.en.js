@@ -49,6 +49,12 @@ const TEXT_EN = {
     },
     WORKING: 'Working...',
   },
+  HELPERS: {
+    EDUCATORS_ASSIGNMENT_LIST: 'Click the arrow next to the assignment name to view the list of students and their completion status.',
+    STUDENTS_ASSIGNMENT_LIST: 'Click on the arrow next to the assignment name to view the due date and instructions.',
+    EDUCATORS_JOIN_URL: 'Send this URL to all the students you want to join this classroom. But first, make sure your students have a Zooniverse account and are logged in before they click the link to join!',
+    SUBJECTS_LIST: 'Choose the type and quantity of trail camera photos you want your students to identify.',
+  },
   LABELS: {
     JOIN_URL: 'Join URL',
     EDUCATOR: 'Educator',
@@ -59,6 +65,7 @@ const TEXT_EN = {
     EXPLORERS: 'Explorers',
     SIGN_IN_REQUIRED: 'Sign in required',
     PHOTOS_SELECTED: 'photo(s) selected',
+    FILTERS_SELECTED: 'filter(s) selected',
     PROGRESS: 'Progress',
   },
   CLASSROOM_FORM: {
@@ -74,7 +81,7 @@ const TEXT_EN = {
     DUEDATE: 'Due date',
   },
   ASSIGNMENT_FORM_PLACEHOLDERS: {
-    DUEDATE: 'e.g. 12-31-2020',
+    DUEDATE: 'MM-DD-YYYY',
   },
 };
 
