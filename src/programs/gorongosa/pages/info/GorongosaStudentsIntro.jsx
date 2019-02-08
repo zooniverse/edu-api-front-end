@@ -12,18 +12,18 @@ import Section from 'grommet/components/Section';
 
 import ShareIcon from 'grommet/components/icons/base/Share';
 
-import imgDarienSplash from '../../images/darien-splash-A.jpg';
+import imgGorongosaSplash from '../../images/lake-urema.jpg';
 
-function DarienStudentsIntro(props) {
+function GorongosaStudentsIntro(props) {
   return (
     <Box>
       <Hero
         className="program-home__hero"
-        background={<Image src={imgDarienSplash} fit="cover" />}
+        background={<Image src={imgGorongosaSplash} fit="cover" />}
         backgroundColorIndex="dark"
         size="small"
       >
-        <Box align="center"><Heading className="program-home__header">Welcome to WildCam Darién Lab</Heading></Box>
+        <Box align="center"><Heading className="program-home__header">Welcome to WildCam Gorongosa Lab</Heading></Box>
       </Hero>
       <Section
         className="program-home__section"
@@ -34,7 +34,7 @@ function DarienStudentsIntro(props) {
       >
         <Box>
           <Paragraph>
-            WildCam Darién Lab is a tool for you to explore the trail camera data collected in Darién and Soberanía National Parks, or to generate your own data through an assignment you have been given by your instructor.
+            WildCam Gorongosa Lab is a tool for you to explore the trail camera data collected in Gorongosa National Park, or to generate your own data through an assignment you have been given by your instructor.
           </Paragraph>
           <Box direction="row">
             <Paragraph>
@@ -44,7 +44,7 @@ function DarienStudentsIntro(props) {
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
             </Paragraph>
             <Box pad="small">
-              <Button  type="button" className="button--secondary" path="/wildcam-darien-lab/students/map" label="Explore Data"></Button>
+              <Button  type="button" className="button--secondary" path="/wildcam-gorongosa-lab/students/map" label="Explore Data"></Button>
             </Box>
           </Box>
           <Box direction="row">
@@ -55,23 +55,23 @@ function DarienStudentsIntro(props) {
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
             </Paragraph>
             <Box pad="small">
-              <Button  type="button" className="button--secondary" path="/wildcam-darien-lab/students" label="View Assignments"></Button>
+              <Button  type="button" className="button--secondary" path="/wildcam-gorongosa-lab/students" label="View Assignments"></Button>
             </Box>
           </Box>
           <Box direction="row">
             <Paragraph>
-              You can learn more about the Darién and Soberanía ecosystems here.
+              You can learn more about the Gorongosa ecosystem here.
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
             </Paragraph>
             <Box pad="small">
-              <Button type="button" className="button--secondary" path="/wildcam-darien-lab/students/ecology" label="Explore Ecology"></Button>
+              <Button type="button" className="button--secondary" path="/wildcam-gorongosa-lab/students/ecology" label="Explore Ecology"></Button>
             </Box>
           </Box>
           <Box direction="row">
             <Paragraph>
-              Read the Darién blog for updates from the scientists in Panama.
+              Read the Gorongosa blog for updates from the scientists.
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
               &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
@@ -86,8 +86,8 @@ function DarienStudentsIntro(props) {
   );
 };
 
-DarienStudentsIntro.defaultProps = {};
+GorongosaStudentsIntro.defaultProps = {};
 
-DarienStudentsIntro.propTypes = {};
+GorongosaStudentsIntro.propTypes = {};
 
-export default DarienStudentsIntro;
+export default GorongosaStudentsIntro;

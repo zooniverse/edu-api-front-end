@@ -24,6 +24,8 @@ import Button from 'grommet/components/Button';
 import DownloadIcon from 'grommet/components/icons/base/Download';
 import LoadingIcon from 'grommet/components/icons/Spinning';
 
+const SAFETY_LIMIT = 100;  //Prevent recursion beyond a sensible limit.
+
 class ClassificationsDownloadButton extends React.Component {
   constructor() {
     super();
@@ -80,7 +82,7 @@ class ClassificationsDownloadButton extends React.Component {
     //  .set('Content-Type', 'application/json')
     //  .set('Authorization', apiClient.headers.Authorization);
     
-    const fetchArguments = { page: 1, page_size: 3 };
+    const fetchArguments = { page: 1 };  //Default page_size is 20
     if (props.workflow_id) fetchArguments.workflow_id = props.workflow_id;
     
     this.setState({ state: 'fetching' });
@@ -107,11 +109,11 @@ class ClassificationsDownloadButton extends React.Component {
         });
       
         //Fetch next set of data
-        if (data.length === 0 || this.safetyCounter >= 10) {
-          this.finishFetchData();
-        } else {
+        if (data && data.length > 0 && this.safetyCounter < SAFETY_LIMIT) {
           fetchArguments.page++;
           this.doFetchData(fetchArguments)
+        } else {
+          this.finishFetchData();
         }
       
         return data;
