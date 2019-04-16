@@ -12,6 +12,9 @@ Requires:
 ********************************************************************************
  */
 
+const gorongosaGeodata = require('./map-geojson/gorongosa.json');
+const vegetationGeodata = require('./map-geojson/vegetation.json');
+
 const mapConfig = {
   //Connection details for the external data source.
   'database': {
@@ -72,11 +75,73 @@ const mapConfig = {
         'attribution': '&copy; <a href=\'http://www.openstreetmap.org/copyright\'>OpenStreetMap</a> &copy; <a href=\'http://cartodb.com/attributions\'>CartoDB</a>'
       }
     ],
-    extraLayers: [],
+    extraLayers: [
+      {
+        'name': 'gorongosa_national_park',
+        'label': 'Gorongosa National Park',
+        'data': gorongosaGeodata,
+        'style': function (feature) {
+          return {
+            stroke: true,
+            color: '#3cc',
+            fill: false,
+            interactive: false,
+          };
+        },
+      },
+      {
+        'name': 'veg_type',
+        'label': 'Habitats',
+        'data': vegetationGeodata,
+        'style': function (feature) {
+          let color = '#ccc';
+          if (feature && feature.properties) {
+            switch (feature.properties.NAME) {
+              case 'Miombo Woodland':
+                color = '#063'; break;
+              case 'Mixed Savanna and Woodland':
+                color = '#693'; break;
+              case 'Floodplain Grassland':
+                color = '#3c9'; break;
+              case 'Limestone Gorges':
+                color = '#cc0'; break;
+              case 'Montane Woodland':
+                color = '#c3c'; break;
+              case 'Montane Forest':
+                color = '#606'; break;
+              case 'Montane Grassland':
+                color = '#30c'; break;
+              case 'Lake Urema':
+                color = '#0ff'; break;
+              case 'Inselberg':
+                color = '#f30'; break;
+            }
+          }
+          
+          return {
+            stroke: false,
+            fill: true,
+            fillColor: color,
+            fillOpacity: 0.2,
+            interactive: false,
+          };
+        },
+      },
+    ],
     'legend': {
       'type': 'simple',
       'items': {
-        '#9c3': 'Work In Progress',
+        '#063': 'Miombo Woodland',
+        '#693': 'Mixed Savanna and Woodland',
+        '#3c9': 'Floodplain Grassland',
+        '#cc0': 'Limestone Gorges',
+
+        '#c3c': 'Montane Woodland',
+        '#606': 'Montane Forest',
+        '#30c': 'Montane Grassland',
+
+        '#0ff': 'Lake Urema',
+        '#f30': 'Inselberg'
       },
     },
     'filters': {
