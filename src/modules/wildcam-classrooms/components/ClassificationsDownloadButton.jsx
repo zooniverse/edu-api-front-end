@@ -13,12 +13,12 @@ import { Actions } from 'jumpstate';
 
 //import superagent from 'superagent';
 //import superagentJsonapify from 'superagent-jsonapify';
+//superagentJsonapify(superagent);
+
 import apiClient from 'panoptes-client/lib/api-client';
 //import { config } from '../../../lib/config';
 import { saveAs } from 'browser-filesaver';
 import { blobbifyData, generateFilename } from '../../../lib/file-download-helpers';
-
-//superagentJsonapify(superagent);
 
 import Button from 'grommet/components/Button';
 import DownloadIcon from 'grommet/components/icons/base/Download';
@@ -75,7 +75,7 @@ class ClassificationsDownloadButton extends React.Component {
   initiateFetchData() {
     const props = this.props;
     
-    this.jsonData = [];
+    this.classificationsData = [];
     this.safetyCounter = 0;
     
     //const request = superagent.get(`${config.root}${endpoint}`)
@@ -96,16 +96,13 @@ class ClassificationsDownloadButton extends React.Component {
     
     apiClient.type('classifications').get(fetchArguments)
       .then((data) => {
-        //For each Classification, add it to our collection.
-        data.forEach((classification) => {
-          const data = this.props.transformData(classification);
-
+        //For each Classification resource, add it to our collection.
+        data.forEach((data) => {
           if (Array.isArray(data)) {  //If we have an array, add _each element_ to our collection, not the array itself.
-            this.jsonData.push(...data)
+            this.classificationsData.push(...data)
           } else if (data) {
-            this.jsonData.push(data)
+            this.classificationsData.push(data)
           }
-
         });
       
         //Fetch next set of data
@@ -122,22 +119,12 @@ class ClassificationsDownloadButton extends React.Component {
   }
   
   finishFetchData() {
-    console.log('+++ finishFetchData \n  total data: ', this.jsonData);
-    
-    let csvData = '';
-    
-    //Get the header
-    if (this.jsonData[0]) {
-      csvData += Object.keys(this.jsonData[0]).map(csvStr).join(',') + '\n';
-    }
-    
-    //Now let's do each row.
-    this.jsonData.forEach((data) => {
-      csvData += Object.values(data).map(csvStr).join(',') + '\n'
+    Promise.resolve(this.props.transformData(this.classificationsData))
+    .then((classifications) => {
+      let csvData = jsonToCsv(classifications);
+      this.saveFile(csvData);
+      this.setState({ state: 'idle' });
     });
-    
-    this.saveFile(csvData);
-    this.setState({ state: 'idle' });
   }
   
   handleError(err) {
@@ -154,48 +141,25 @@ class ClassificationsDownloadButton extends React.Component {
 --------------------------------------------------------------------------------
  */
 
-function csvStr(str) {
+function csvStr (str) {
   if (!str) return '';
-  return '"' + str.replace(/"/g, '""') + '"';
+  return '"' + String(str).replace(/"/g, '""') + '"';
 }
 
-function transformWildCamData(classification) {
-  console.log('+++ transformdata: ', classification);
+function jsonToCsv (json) {
+  let csv = '';
   
-  const classification_id = classification.id;
-  const subject_id =
-    classification.links &&
-    classification.links.subjects &&
-    classification.links.subjects[0];
-  const user_id =
-    classification.links &&
-    classification.links.user;
-  const assignment_id =
-    classification.links &&
-    classification.links.workflow;
-  
-  let data = [];
-  
-  classification.annotations.forEach(task => {
-    task.value.forEach(answer => {
-      
-      const species = answer.choice;
-      const count = answer.answers && answer.answers.HOWMANY;
-      
-      if (user_id && assignment_id && classification_id && subject_id && species) {
-        data.push({
-          user_id,
-          assignment_id,
-          classification_id,
-          subject_id,
-          species,
-          count,
-        });
-      }
-    });
+  //Get the header
+  if (json[0]) {
+    csv += Object.keys(json[0]).map(csvStr).join(',') + '\n';
+  }
+
+  //Now let's do each row.
+  json.forEach((row) => {
+    csv += Object.values(row).map(csvStr).join(',') + '\n'
   });
   
-  return data;
+  return csv;
 }
 
 /*
@@ -206,7 +170,7 @@ ClassificationsDownloadButton.defaultProps = {
   contentType: 'text/csv',
   fileNameBase: 'download-',
   label: '',
-  transformData: transformWildCamData,
+  transformData: (data) => { return data },
   workflow_id: undefined,
 };
 
