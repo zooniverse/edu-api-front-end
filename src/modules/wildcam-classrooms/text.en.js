@@ -23,6 +23,7 @@ const TEXT_EN = {
     HELP: 'Help',  //Generic "help" action, for How Tos, Guides, Instructions, etc.
     NEXT: 'Next',  //Generic "next" action, e.g. to go to the next step in a tutorial.
     PREVIOUS: 'Previous',  //Generic "previous" action, e.g. to go to the previous step in a tutorial.
+    REGISTER_TEACHER: 'Register Teacher',
     SELECT_ALL: 'Select all',  //Generic "select all" action, e.g. for a list of students.
     SELECT_SUBJECTS: 'Select photos',
     SELECT_SUBJECTS_AGAIN: 'Change photo selection',
@@ -130,7 +131,6 @@ const TEXT_EN = {
         'Social Media',
         'News story/blog',
         'Internet search',
-        'News story/blog',
         'Educator Forum or ListServ',
         'Friend/Colleague',
         'Other',

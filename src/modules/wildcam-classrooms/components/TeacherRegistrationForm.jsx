@@ -28,10 +28,9 @@ import Form from 'grommet/components/Form';
 import FormField from 'grommet/components/FormField';
 import Heading from 'grommet/components/Heading';
 import Label from 'grommet/components/Label';
-import List from 'grommet/components/List';
-import ListItem from 'grommet/components/ListItem';
 import TextInput from 'grommet/components/TextInput';
-import NumberInput from 'grommet/components/NumberInput';
+import CheckBox from 'grommet/components/CheckBox';
+import RadioButton from 'grommet/components/RadioButton';
 
 import CloseIcon from 'grommet/components/icons/base/Close';
 import LinkPreviousIcon from 'grommet/components/icons/base/LinkPrevious';
@@ -148,7 +147,7 @@ class AssignmentForm extends React.Component {
   
   // ----------------------------------------------------------------
   
-  updateForm(e) {
+  updateForm_text(e) {
     let val = e.target.value;
     
     this.setState({
@@ -159,16 +158,46 @@ class AssignmentForm extends React.Component {
     });
   }
   
+  updateForm_checkbox (e) {
+    const DELIMITER = ';';
+    const name = e.target.name;
+    const checked = e.target.checked;
+    const index = parseInt(e.target.id.replace(`${name}_`, ''));
+    const newValue = TEXT.TEACHER_REGISTRATION_FORM.ANSWERS[name.toUpperCase()][index];
+    let answers = this.state.form[name].split(DELIMITER);
+    
+    // Remove any answers that aren't included in the known answer set. Required for backwards compatibility.
+    answers = answers.filter((ans) => TEXT.TEACHER_REGISTRATION_FORM.ANSWERS[name.toUpperCase()].includes(ans))
+    
+    answers = answers.filter((ans) => ans !== newValue);  // Remove if answer exists, to start with a clean slate...
+    checked && answers.push(newValue)  // ...then add if checkbox is checked.
+    
+    this.setState({
+      form: {
+        ...this.state.form,
+        [name]: answers.join(DELIMITER),
+      }
+    });
+  }
+  
+  updateForm_radio (e) {
+    const name = e.target.name;
+    const value = e.target.value;
+    
+    this.setState({
+      form: {
+        ...this.state.form,
+        [name]: value,
+      }
+    });
+  }
+  
   submitForm(e) {
     const props = this.props;
     const state = this.state;
     
     //Prevent standard browser actions
     e.preventDefault();
-    
-    // ... TODO
-    
-    console.log('+++ SUBMIT: ', state.form);
     
     const data = {
       data: {
@@ -272,56 +301,88 @@ class AssignmentForm extends React.Component {
             <TextInput
               id="country"
               value={this.state.form.country}
-              onDOMChange={this.updateForm.bind(this)}
+              onDOMChange={this.updateForm_text.bind(this)}
             />
           </FormField>
           
           <FormField htmlFor="name" label={TEXT.TEACHER_REGISTRATION_FORM.FIELDS.SETTING}>
-            <TextInput
-              id="setting"
-              value={this.state.form.setting}
-              onDOMChange={this.updateForm.bind(this)}
-            />
+            {TEXT.TEACHER_REGISTRATION_FORM.ANSWERS.SETTING.map((answer, index) => 
+              <CheckBox
+                key={`setting_${index}`}
+                id={`setting_${index}`}
+                name="setting"
+                checked={state.form.setting.includes(answer)}
+                label={answer}
+                onChange={this.updateForm_checkbox.bind(this)}
+              />
+            )}
           </FormField>
           
           <FormField htmlFor="name" label={TEXT.TEACHER_REGISTRATION_FORM.FIELDS.AGE}>
-            <TextInput
-              id="age"
-              value={this.state.form.age}
-              onDOMChange={this.updateForm.bind(this)}
-            />
+            {TEXT.TEACHER_REGISTRATION_FORM.ANSWERS.AGE.map((answer, index) => 
+              <CheckBox
+                key={`age_${index}`}
+                id={`age_${index}`}
+                name="age"
+                checked={state.form.age.includes(answer)}
+                label={answer}
+                onChange={this.updateForm_checkbox.bind(this)}
+              />
+            )}
           </FormField>
           
           <FormField htmlFor="name" label={TEXT.TEACHER_REGISTRATION_FORM.FIELDS.COURSE}>
-            <TextInput
-              id="course"
-              value={this.state.form.course}
-              onDOMChange={this.updateForm.bind(this)}
-            />
+            {TEXT.TEACHER_REGISTRATION_FORM.ANSWERS.COURSE.map((answer, index) => 
+              <CheckBox
+                key={`course_${index}`}
+                id={`course_${index}`}
+                name="course"
+                checked={state.form.course.includes(answer)}
+                label={answer}
+                onChange={this.updateForm_checkbox.bind(this)}
+              />
+            )}
           </FormField>
           
           <FormField htmlFor="name" label={TEXT.TEACHER_REGISTRATION_FORM.FIELDS.FOUNDON}>
-            <TextInput
-              id="foundon"
-              value={this.state.form.foundon}
-              onDOMChange={this.updateForm.bind(this)}
-            />
+            {TEXT.TEACHER_REGISTRATION_FORM.ANSWERS.FOUNDON.map((answer, index) => 
+              <CheckBox
+                key={`foundon_${index}`}
+                id={`foundon_${index}`}
+                name="foundon"
+                checked={state.form.foundon.includes(answer)}
+                label={answer}
+                onChange={this.updateForm_checkbox.bind(this)}
+              />
+            )}
           </FormField>
           
           <FormField htmlFor="name" label={TEXT.TEACHER_REGISTRATION_FORM.FIELDS.RESOURCE}>
-            <TextInput
-              id="resource"
-              value={this.state.form.resource}
-              onDOMChange={this.updateForm.bind(this)}
-            />
+            {TEXT.TEACHER_REGISTRATION_FORM.ANSWERS.RESOURCE.map((answer, index) => 
+              <RadioButton
+                key={`resource_${index}`}
+                id={`resource_${index}`}
+                name="resource"
+                checked={(state.form.resource === answer)}
+                label={answer}
+                value={answer}
+                onChange={this.updateForm_radio.bind(this)}
+              />
+            )}
           </FormField>
           
           <FormField htmlFor="name" label={TEXT.TEACHER_REGISTRATION_FORM.FIELDS.FEEDBACK}>
-            <TextInput
-              id="feedback"
-              value={this.state.form.feedback}
-              onDOMChange={this.updateForm.bind(this)}
-            />
+            {TEXT.TEACHER_REGISTRATION_FORM.ANSWERS.FEEDBACK.map((answer, index) => 
+              <RadioButton
+                key={`feedback_${index}`}
+                id={`feedback_${index}`}
+                name="feedback"
+                checked={(state.form.feedback === answer)}
+                label={answer}
+                value={answer}
+                onChange={this.updateForm_radio.bind(this)}
+              />
+            )}
           </FormField>
           
         </fieldset>
