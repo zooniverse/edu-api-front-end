@@ -517,7 +517,7 @@ Effect('wcc_teachers_refreshData', ({ selectedProgram, selectedClassroom = null,
     
     //Also restore assignments, if any apply.
     if (retrieved_selectedClassroom && saved_selectedAssignment_id) {
-      return Actions.wcc_fetchAssignments({ selectedClassroom: retrieved_selectedClassroom })
+      return Actions.wcc_fetchAssignments({ selectedProgram, selectedClassroom: retrieved_selectedClassroom })
       .then((body) => {
         const assignments = body.data;
         
@@ -560,18 +560,19 @@ Effect('wcc_teachers_refreshData', ({ selectedProgram, selectedClassroom = null,
     API notes: 
       GET /assignments/?classroom_id=123
  */
-Effect('wcc_fetchAssignments', ({ selectedClassroom }) => {
+Effect('wcc_fetchAssignments', ({ selectedProgram, selectedClassroom }) => {
   //NOTE: if selectedClassroom isn't specified, this will pull a list of ALL
   //Assignments belonging to the user. This is useful in certain circumstances.
   //However, do note that the argument needs to be an empty object, e.g.
   //  `Actions.wcc_fetchAssignments({})`
   
   const classroom_id = (selectedClassroom) ? selectedClassroom.id : undefined;
+  const program_id = (selectedProgram) ? selectedProgram.id : undefined;
   
   Actions.wildcamClassrooms.resetAssignments();
   Actions.wildcamClassrooms.setAssignmentsStatus(WILDCAMCLASSROOMS_DATA_STATUS.FETCHING);
   
-  return get('/assignments/', [{ classroom_id }])
+  return get('/assignments/', [{ program_id, classroom_id }])
   
   .then((response) => {
     if (!response) { throw 'ERROR (wildcam-classrooms/ducks/wcc_fetchAssignments): No response'; }
