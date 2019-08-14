@@ -49,9 +49,14 @@ class AssignmentsListForStudents extends React.Component {
       showLoginReminder: undefined,  // undefined if reminder isn't being show; assignment ID if one assignment has been selected.
     };
   }
-  
-  componentDidMount() {
-    Actions.wcc_fetchAssignments({ selectedProgram: this.props.selectedProgram });
+
+  componentWillReceiveProps(nextProps) {
+    const props = this.props;
+    if (props.classroomsStatus !== WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS  // Only fetch assignments when classroom status changes to success
+        && nextProps.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS
+        ) {
+      Actions.wcc_fetchAssignments({ selectedProgram: nextProps.selectedProgram });
+    }
   }
   
   // ----------------------------------------------------------------
@@ -66,6 +71,7 @@ class AssignmentsListForStudents extends React.Component {
         pad="medium"
       >
         <Heading tag="h2">{TEXT.TITLES.YOUR_ASSIGNMENTS}</Heading>
+        
         {(() => {
           if (props.classroomsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS && props.assignmentsStatus === WILDCAMCLASSROOMS_DATA_STATUS.SUCCESS) {
             return this.render_readyState();
