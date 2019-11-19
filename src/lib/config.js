@@ -59,6 +59,15 @@ const baseConfig = {
   }
 };
 
+// DEBUG
+console.log('DEBUG...')
+console.log('-'.repeat(80))
+console.log('env: ', env)
+console.log('envFromBrowser: ', envFromBrowser)
+console.log('envFromShell: ', envFromShell)
+console.log('DEFAULT_ENV: ', DEFAULT_ENV)
+console.log('-'.repeat(80))
+
 const config = baseConfig[env];
 export { env, config };
 
