@@ -61,10 +61,10 @@ const i2a = {
           classifications_target: "10",
           slug: 'zooniverse/intro2astro-hubbles-law'
         },
-        "5521": {
+        "11981": {
           name: i2aAssignmentNames.galaxy,
           classifications_target: "22",
-          slug: 'zooniverse/galaxy-zoo-in-astronomy-101'
+          slug: 'mollysimon/galaxy-zoo-crowdsourcing-activity'
         }
       }
     }
@@ -207,13 +207,33 @@ function sortPrograms(programs) {
   return programs;
 }
 
+// temporary for the transition
+function useI2AMock(selectedProgram) {
+  const isProduction = env === 'production'
+  const productionMock = i2a.production
+  if (isProduction && selectedProgram && selectedProgram.name === productionMock.name) {
+    delete selectedProgram.metadata.assignments["5521"]
+    return Object.assign({}, selectedProgram, { 
+      metadata: {
+        assignments: {
+          "5522": productionMock.metadata.assignments["5522"],
+          "11981": productionMock.metadata.assignments["11981"]
+        }
+      }
+    })
+  } else {
+    return selectedProgram
+  }
+}
+
 // Synchonous actions
 const setStatus = (state, status) => {
   return { ...state, status };
 };
 
 const selectProgram = (state, selectedProgram) => {
-  return { ...state, selectedProgram };
+  const programToSet = useI2AMock(selectedProgram)
+  return { ...state, selectedProgram: programToSet };
 };
 
 const setPrograms = (state, programs) => {
