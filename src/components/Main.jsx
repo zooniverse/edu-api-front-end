@@ -13,6 +13,7 @@ import AppNotification from '../containers/layout/AppNotification';
 import ProgramHomeContainer from '../containers/common/ProgramHomeContainer';
 import JoinPageContainer from '../containers/common/JoinPageContainer';
 import GenericStatusPage from './common/GenericStatusPage';
+import GooglePrivacyPolicy from './GooglePrivacyPolicy';
 
 import AppHeader from './layout/AppHeader';
 import {
@@ -51,6 +52,7 @@ const Main = ({ admin, initialised, location }) => {
         <AppNotification />
         <Switch>
           <Route exact path="/" component={HomeContainer} />
+          <Route exact path="/google-privacy-policy" component={GooglePrivacyPolicy} />
           <Route exact path="/:program/students/classrooms/:classroomId/join" component={JoinPageContainer} />
           <Route path="/:program" component={ProgramHomeContainer} />
         </Switch>
