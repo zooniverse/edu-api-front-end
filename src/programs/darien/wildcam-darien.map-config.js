@@ -18,7 +18,7 @@ const mapConfig = {
   //Connection details for the external data source.
   'database': {
     'urls': {
-      'json': '//localhost:8001/darien.json?sql={SQLQUERY}',
+      'json': '//localhost:8001/darien.json?_shape=objects&sql={SQLQUERY}',
       'geojson': '//localhost:8001/darien.geojson?sql={SQLQUERY}',
       'csv': '//localhost:8001/darien.csv?sql={SQLQUERY}'
     },

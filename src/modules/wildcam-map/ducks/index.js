@@ -353,17 +353,7 @@ Effect('wcm_getActiveCamera', (payload = {}) => {
   })
   .then(json => {
     Actions.wildcamMap.setActiveCameraDataStatus(WILDCAMMAP_CAMERA_STATUS.SUCCESS);
-    // transform the data into an object using the cols result set
-    var object_rows = json.rows.map(row => {
-      var object_row = {}
-      row.forEach((currElement, index) => {
-        var column_name = json.columns[index]
-        object_row[column_name] = currElement
-      })
-      return object_row
-    })
-    console.log(object_rows)
-    Actions.wildcamMap.setActiveCameraData(object_rows);
+    Actions.wildcamMap.setActiveCameraData(json.rows);
   })
   .catch(err => {
     Actions.wildcamMap.setActiveCameraDataStatus(WILDCAMMAP_CAMERA_STATUS.ERROR);
@@ -388,17 +378,7 @@ Effect('wcm_getActiveCamera', (payload = {}) => {
   .then(json => {
     Actions.wildcamMap.setActiveCameraMetadataStatus(WILDCAMMAP_CAMERA_STATUS.SUCCESS);
     if (json && json.rows) {
-      // transform the data into an object using the cols result set
-      var object_rows = json.rows.map(row => {
-        var object_row = {}
-        row.forEach((currElement, index) => {
-          var column_name = json.columns[index]
-          object_row[column_name] = currElement
-        })
-        return object_row
-      })
-      console.log(object_rows)
-      Actions.wildcamMap.setActiveCameraMetadata(object_rows[0]);  //SELECT query should only return one result.
+      Actions.wildcamMap.setActiveCameraMetadata(json.rows[0]);  //SELECT query should only return one result.
     } else {
       Actions.wildcamMap.setActiveCameraMetadata(null);
     }
